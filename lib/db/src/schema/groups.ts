@@ -1,0 +1,56 @@
+import {
+  pgTable,
+  uuid,
+  text,
+  integer,
+  timestamp,
+  date,
+  jsonb,
+  primaryKey,
+  unique,
+} from "drizzle-orm/pg-core";
+
+export const groupsTable = pgTable(
+  "groups",
+  {
+    chatId: text("chat_id"),
+    tenantId: uuid("tenant_id").notNull(),
+    name: text("name"),
+    messageCount: integer("message_count"),
+    lastActivityAt: timestamp("last_activity_at", { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.chatId] })],
+);
+
+// User-managed list of groups treated as "support/noise" and hidden by default
+// on the Mentions page. Replaces the formerly hardcoded list in scope.ts.
+export const supportGroupsTable = pgTable(
+  "support_groups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id").notNull(),
+    chatId: text("chat_id").notNull(),
+    name: text("name"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [unique().on(t.tenantId, t.chatId)],
+);
+
+export const groupDigestsTable = pgTable("group_digests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  chatId: text("chat_id"),
+  periodStart: date("period_start", { mode: "string" }),
+  periodEnd: date("period_end", { mode: "string" }),
+  summary: text("summary"),
+  topExcerpts: jsonb("top_excerpts"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type Group = typeof groupsTable.$inferSelect;
+export type GroupDigest = typeof groupDigestsTable.$inferSelect;
+export type SupportGroup = typeof supportGroupsTable.$inferSelect;

@@ -1,0 +1,42 @@
+Você vai construir o **Sinal** — um dashboard de inteligência de WhatsApp + CRM. O escopo completo, schema, telas e regras estão no arquivo **`PRD.md` anexado. Leia-o inteiro antes de começar e trate-o como fonte de verdade.**
+
+## Stack
+- **Banco:** Supabase já existente (projeto `Whatsapp-bruno-sp`). A tabela `whatsapp_messages` (~85k linhas) é a fonte e é **read-only — nunca altere ela**. Você só cria tabelas novas.
+- **Backend:** API REST (Node/TypeScript). **Frontend:** React. **IA:** OpenAI API (key direta).
+- Use Secrets do Replit para: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `OPENAI_API_KEY`, `WHATSAPP_OWNER`. Vou fornecer os valores.
+
+## Como você DEVE trabalhar (inegociável)
+1. **Micro-fases.** Quebre o projeto em fases pequenas, cada uma entregável e **testável isoladamente**. Faça UMA fase por vez.
+2. **Checkpoint de teste antes de avançar.** Ao terminar cada fase, **rode um teste real e me mostre a prova** (o número retornado, o JSON, o print da tela funcionando). Só siga para a próxima fase depois que eu confirmar "ok".
+3. **Nunca avance com a fase anterior quebrada.** Se algo falha, pare e conserte antes de seguir. Não empilhe.
+4. **Sempre valide com DADOS REAIS do Supabase, nunca com mock.** Uma tela ou endpoint "pronto" significa renderizando dado real do banco.
+5. **Controle de custo de IA.** Toda etapa que chama OpenAI: rode primeiro numa **amostra de 30–50 mensagens**, me mostre o resultado, e só depois processe em massa. Nunca rode o backfill dos 85k sem eu aprovar a amostra.
+6. **Não invente escopo.** Construa só o que está no PRD. Respeite a seção "Fora do MVP" — não construa perguntas-sem-resposta, ações múltiplas, nem ingestion de terceiros. O sistema é **só-leitura** do WhatsApp (não envia mensagem).
+7. **Multi-tenant desde já:** toda tabela nova tem `tenant_id` + RLS. Eu sou o tenant nº 1.
+
+## Roteiro de micro-fases (cada uma com seu teste)
+
+**Fase 0 — Conexão.** Conecte ao Supabase. **Teste:** `SELECT count(*) FROM whatsapp_messages` e me mostre o número (deve ser ~84.858).
+
+**Fase 1 — Schema + tenancy.** Crie as tabelas novas do PRD (seção 4) com `tenant_id` + RLS. Seed do tenant nº 1. **Teste:** rode as migrations sem erro e mostre a lista de tabelas criadas + um insert/select de teste respeitando RLS.
+
+**Fase 2 — Auth.** Supabase Auth (login simples) + vínculo user→tenant. **Teste:** logar e provar que só enxergo dados do meu tenant.
+
+**Fase 3 — Pipeline de classificação (AMOSTRA).** Job que pega 50 mensagens de texto, classifica via OpenAI (modelo mini, JSON `{category, sentiment, topics, is_question, requires_reply, summary}`) e grava em `message_enrichment`. **Teste:** me mostre as 50 classificações pra eu conferir se as categorias batem com a taxonomia do PRD (seção 9). **Pare aqui pra eu aprovar antes de escalar.**
+
+**Fase 4 — Backfill texto.** Depois do meu ok, processe o resto em lotes (idempotente). **Teste:** mostre o % processado subindo e o custo real vs. o estimado (~US$30–50).
+
+**Fase 5 — Mídia.** Whisper (áudio) + vision/OCR (imagem) numa amostra de 10+10. **Teste:** me mostre transcrições e OCR pra eu avaliar a qualidade antes de processar tudo.
+
+**Fase 6 — Pautas + Menções.** `topics` (clustering + nomeação por LLM) com cross-grupo (`topic_groups`) e vínculo `topic_messages` pra prova; `monitored_entities` + `mentions` (detecção de "Bruno"/produtos, inclusive indireta). **Teste:** mostre 5 pautas nomeadas que façam sentido + 3 menções reais detectadas numa amostra.
+
+**Fase 7 — API.** Endpoints REST por área (PRD seção 8), lendo dado real. **Teste:** chame cada endpoint (curl) e me mostre o JSON real retornado.
+
+**Fase 8 — UI, uma área por vez.** Construa na ordem: Overview → Privado → Grupos (+ drawers de contexto) → Menções → Contatos → Salvos & Tasks. Use o `mockup.html` como referência visual (dark-first, denso). **Teste por área:** cada tela renderizando dado real + navegação + drawer abrindo com os trechos reais. Me mostre o print de cada uma antes de ir pra próxima.
+
+**Fase 9 — CRM write + Tasks + Salvos.** CRUD de contato, tasks com check (`done`), botão salvar (`saved_items`), promoção de contato de grupo. **Teste:** criar task, marcar concluída, salvar um item — e provar que persistiu no banco.
+
+**Fase 10 — Sync Google Contacts.** Import automático (casa por telefone) + export **só com aprovação por contato**. **Teste:** import casando um contato real + export disparando só no clique.
+
+## Primeira ação
+Leia o `PRD.md`. Depois **comece pela Fase 0 e PARE** — me mostre o resultado do teste da Fase 0 e aguarde meu "ok" antes da Fase 1. Não adiante fases.
