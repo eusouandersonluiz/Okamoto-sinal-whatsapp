@@ -3,6 +3,7 @@ import {
   uuid,
   text,
   integer,
+  boolean,
   timestamp,
   date,
   jsonb,
@@ -18,6 +19,14 @@ export const groupsTable = pgTable(
     name: text("name"),
     messageCount: integer("message_count"),
     lastActivityAt: timestamp("last_activity_at", { withTimezone: true }),
+    // Group-management state (see migration 0010_group_management.sql).
+    relevance: text("relevance").notNull().default("monitored"),
+    category: text("category"),
+    tags: text("tags").array(),
+    alias: text("alias"),
+    digestEnabled: boolean("digest_enabled").notNull().default(true),
+    digestCadence: text("digest_cadence").notNull().default("weekly"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
   },
   (t) => [primaryKey({ columns: [t.tenantId, t.chatId] })],
 );
