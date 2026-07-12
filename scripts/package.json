@@ -15,6 +15,7 @@
     "build-topics": "tsx ./src/build-topics.ts",
     "build-mentions": "tsx ./src/build-mentions.ts",
     "refresh-all": "tsx ./src/refresh-all.ts",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "vitest": "^4.1.8"
   }
 }
