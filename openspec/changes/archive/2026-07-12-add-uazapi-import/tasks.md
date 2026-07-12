@@ -37,6 +37,6 @@
 
 ## 6. Verificação final (pendente)
 
-- [ ] 6.1 Rodar fluxo manual completo contra dados reais: `create-local-source` → `migrate` → `import-uazapi` (piloto) → conferir linhas por `chat_type`
-- [ ] 6.2 Rodar `refresh-all` (amostra) e confirmar dados em Visão Geral, Privado, Grupos e Mídia
-- [ ] 6.3 Resolver dependências `*-darwin-arm64` pinadas no `package.json` raiz antes do merge (risco de quebrar install em Linux/Replit)
+- [x] 6.1 Fluxo manual contra dados reais rodado (Supabase local): `create-local-source` → `migrate` → `import-uazapi` piloto → `whatsapp_messages` = 3224 linhas (chat_type=group); import idempotente (0 novas na reexecução)
+- [ ] 6.2 Rodar `refresh-all` (amostra) e confirmar dados em Visão Geral, Privado, Grupos e Mídia — PENDENTE (custo OpenAI, adiado)
+- [x] 6.3 Landmine `*-darwin-arm64` resolvido pela migração para Bun (deps e overrides de plataforma eliminados; `bun install` resolve binários por plataforma). Ver change arquivada `migrate-to-bun-and-rebrand`
