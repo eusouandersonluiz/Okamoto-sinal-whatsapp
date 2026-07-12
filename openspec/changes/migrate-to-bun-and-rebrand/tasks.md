@@ -41,7 +41,7 @@
 ## 5. Verificação final
 
 - [x] 5.1 `bun install` limpo do zero (removido todo node_modules) resolve tudo (539 pacotes)
-- [x] 5.2 `bun test` verde: scripts 20/20. api-server PENDENTE (testes de integração precisam de DB; imports migrados p/ `bun:test`, typecheck verde)
+- [x] 5.2 `bun test` verde: scripts 20/20. api-server PENDENTE (testes de integração precisam de DB; imports migrados p/ `bun:test` incl. `src/test/fixtures.ts`, typecheck verde). Nota: o `vitest.config.ts` removido tinha `fileParallelism:false` (os suites criam fixtures nas MESMAS tabelas do mesmo Postgres → corrida de DDL se paralelos); `bun test` roda arquivos em série por padrão, mas confirmar quando houver DB. `deps.inline` do vitest não é necessário (bun resolve .ts/workspace nativo)
 - [x] 5.3 Typecheck de todos os pacotes verde (libs + scripts + api-server + radar-web + radar-deck + mockup); builds dos 3 apps verdes (corrigido `src/test/fixtures.ts` que ainda importava vitest)
 - [ ] 5.4 `docker compose up` end-to-end com dados reais (uazapi piloto → refresh-all → dashboards) — PENDENTE (precisa Supabase/uazapi/OpenAI vivos). Validado sem dados: build+boot+serve estático+roteamento /api
 - [x] 5.5 Landmine `6.3` de `add-uazapi-import` resolvido (deps `*-darwin-arm64` e overrides de plataforma eliminados)
