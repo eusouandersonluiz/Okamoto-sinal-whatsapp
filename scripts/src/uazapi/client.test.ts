@@ -91,3 +91,28 @@ describe("normalizeMessage timestamp", () => {
     expect(normalizeMessage(raw(1720000000000)).timestampMs).toBe(1720000000000);
   });
 });
+
+describe("normalizeMessage mídia", () => {
+  // Historical media: uazapi leaves fileURL empty; the (encrypted) WhatsApp URL
+  // and mimetype live under content. media_url must fall back to content.URL so
+  // the row is non-null and the Mídia page counts it.
+  const audio = {
+    messageid: "AUD1",
+    chatid: "120363000000000000@g.us",
+    messageType: "AudioMessage",
+    fileURL: "",
+    text: "",
+    content: { URL: "https://mmg.whatsapp.net/x.enc", mimetype: "audio/ogg; codecs=opus" },
+    messageTimestamp: 1720000000000,
+  };
+  it("usa content.URL quando fileURL está vazio", () => {
+    const m = normalizeMessage(audio);
+    expect(m.mediaUrl).toBe("https://mmg.whatsapp.net/x.enc");
+    expect(m.mediaMimeType).toBe("audio/ogg; codecs=opus");
+    expect(m.rawType).toBe("AudioMessage");
+  });
+  it("prefere fileURL quando presente", () => {
+    const m = normalizeMessage({ ...audio, fileURL: "https://cache/x.ogg" });
+    expect(m.mediaUrl).toBe("https://cache/x.ogg");
+  });
+});

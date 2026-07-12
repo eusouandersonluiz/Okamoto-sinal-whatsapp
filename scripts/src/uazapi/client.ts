@@ -47,7 +47,12 @@ export function normalizeMessage(raw: Record<string, unknown>): UazMessage {
     senderName: str(raw.senderName),
     text: str(raw.text) ?? str(content.text),
     caption: str(content.caption) ?? str(raw.caption),
-    mediaUrl: str(raw.fileURL),
+    // uazapi only fills fileURL when it has downloaded/cached the media;
+    // for historical messages that's empty and the (encrypted) WhatsApp URL
+    // lives in content.URL. Prefer the cached fileURL, fall back to content.URL
+    // so media-bearing rows still get a non-null media_url (the Mídia page
+    // filters `media_url is not null`).
+    mediaUrl: str(raw.fileURL) ?? str(content.URL),
     mediaMimeType: str(content.mimetype) ?? str(raw.mimetype),
     replyToMessageId: normalizeQuoted(raw.quoted),
     forwarded: raw.forwarded === true || raw.isForwarded === true,
