@@ -1,0 +1,16 @@
+{
+  "messageid": "3AFE00000000EXEMPLO",
+  "id": "558193452502:3AFE00000000EXEMPLO",
+  "chatid": "120363000000000000@g.us",
+  "fromMe": false,
+  "isGroup": true,
+  "messageType": "Conversation",
+  "text": "mensagem de exemplo",
+  "content": { "text": "mensagem de exemplo" },
+  "fileURL": "",
+  "quoted": "",
+  "reaction": "",
+  "sender": "111111111111111@lid",
+  "senderName": "Contato Exemplo",
+  "messageTimestamp": 1720000000000
+}
