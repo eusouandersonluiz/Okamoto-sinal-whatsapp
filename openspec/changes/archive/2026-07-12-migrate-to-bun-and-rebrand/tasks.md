@@ -6,7 +6,7 @@
 - [x] 1.4 Trocar os comandos `pnpm --filter`/`pnpm -r` por equivalentes `bun --filter` nos scripts raiz e de app
 - [x] 1.5 Remover `preinstall` (guarda pnpm), `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `.npmrc` (bunfig.toml não necessário)
 - [x] 1.6 Rodar `bun install` e gerar `bun.lock`; confirmar resolução dos workspaces (clean install: 539 pacotes)
-- [ ] 1.7 Smoke da camada de dados sob bun: `bun run migrate` e `bun run db-stats` contra Postgres local — PENDENTE (precisa DB vivo; import de pg/drizzle/@workspace/db sob bun já validado)
+- [x] 1.7 Camada de dados sob bun validada contra Postgres local: `create-local-source`, `migrate` (todas as migrations aplicadas) e `import-uazapi` piloto rodam limpo; query em `profiles`/`whatsapp_messages` OK
 - [x] 1.8 Migrar testes para `bun test`: removidos `vitest.config.ts` (scripts, api-server) e dep `vitest`; `vi.fn`→`mock`, `vi.stubGlobal(fetch)`→swap+restore de `globalThis.fetch`; imports `vitest`→`bun:test` nos 15 arquivos; `@types/bun` + `types:["node","bun"]`
 - [x] 1.9 `bun test` verde em scripts (20/20); api-server PENDENTE (testes de integração precisam de DB)
 
