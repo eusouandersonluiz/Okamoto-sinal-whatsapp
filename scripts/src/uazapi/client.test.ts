@@ -76,3 +76,18 @@ describe("UazapiClient.listMessages paginação", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("normalizeMessage timestamp", () => {
+  const raw = (ts: number) => ({
+    messageid: "T",
+    chatid: "c@s.whatsapp.net",
+    messageType: "Conversation",
+    messageTimestamp: ts,
+  });
+  it("converte timestamp em segundos para ms", () => {
+    expect(normalizeMessage(raw(1720000000)).timestampMs).toBe(1720000000000);
+  });
+  it("mantém timestamp já em ms", () => {
+    expect(normalizeMessage(raw(1720000000000)).timestampMs).toBe(1720000000000);
+  });
+});

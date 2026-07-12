@@ -73,15 +73,27 @@ async function postJson(
   body: unknown,
 ): Promise<Record<string, unknown>> {
   const maxAttempts = 4;
+  const backoff = (attempt: number) =>
+    new Promise((r) => setTimeout(r, Math.min(15000, 500 * 2 ** attempt)));
   for (let attempt = 1; ; attempt++) {
-    const res = await fetch(`${base}${endpoint}`, {
-      method: "POST",
-      headers: { token, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${base}${endpoint}`, {
+        method: "POST",
+        headers: { token, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch (e) {
+      // Network-level failure (DNS/reset/timeout): retry with backoff.
+      if (attempt < maxAttempts) {
+        await backoff(attempt);
+        continue;
+      }
+      throw e;
+    }
     if (res.ok) return (await res.json()) as Record<string, unknown>;
     if ((res.status === 429 || res.status >= 500) && attempt < maxAttempts) {
-      await new Promise((r) => setTimeout(r, Math.min(15000, 500 * 2 ** attempt)));
+      await backoff(attempt);
       continue;
     }
     throw new Error(`uazapi ${endpoint} ${res.status}: ${await res.text()}`);
@@ -106,9 +118,16 @@ export class UazapiClient {
       });
       const batch = (payload.chats ?? []) as Record<string, unknown>[];
       for (const c of batch) yield normalizeChat(c);
+      if (batch.length === 0) return;
       offset += batch.length;
-      const total = (payload.pagination as { totalRecords?: number } | undefined)?.totalRecords ?? 0;
-      if (batch.length === 0 || offset >= total) return;
+      const total = (payload.pagination as { totalRecords?: number } | undefined)?.totalRecords;
+      // With a known total, stop at it; otherwise fall back to "a short page
+      // means the end" so a missing totalRecords doesn't silently truncate.
+      if (typeof total === "number") {
+        if (offset >= total) return;
+      } else if (batch.length < this.pageSize) {
+        return;
+      }
     }
   }
 
@@ -133,7 +152,10 @@ export class UazapiClient {
         if (opts.limit && ++yielded >= opts.limit) return;
       }
       if (batch.length === 0 || payload.hasMore !== true) return;
-      offset = (payload.nextOffset as number | undefined) ?? offset + batch.length;
+      const next = (payload.nextOffset as number | undefined) ?? offset + batch.length;
+      // Guard against a non-advancing cursor (would loop forever).
+      if (next <= offset) return;
+      offset = next;
     }
   }
 }
