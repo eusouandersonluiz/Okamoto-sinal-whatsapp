@@ -1,14 +1,14 @@
 ## 1. Fase 1 — Toolchain Bun
 
-- [ ] 1.1 Adicionar `workspaces` (artifacts/*, lib/*, lib/integrations/*, scripts) ao `package.json` raiz
-- [ ] 1.2 Inlinar as versões do `catalog` do pnpm em cada `package.json` consumidor
-- [ ] 1.3 Trocar `tsx ./src/*.ts` → `bun ./src/*.ts` nos scripts de `scripts/package.json`
-- [ ] 1.4 Trocar os comandos `pnpm --filter`/`pnpm -r` por equivalentes `bun --filter` nos scripts raiz e de app
-- [ ] 1.5 Remover `preinstall` (guarda pnpm), `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `.npmrc`; adicionar `bunfig.toml` se necessário
-- [ ] 1.6 Rodar `bun install` e gerar `bun.lock`; confirmar resolução dos workspaces
-- [ ] 1.7 Smoke da camada de dados sob bun: `bun run migrate` e `bun run db-stats` contra Postgres local
-- [ ] 1.8 Migrar testes para `bun test`: remover `vitest.config.ts` (scripts, api-server), tirar dep `vitest`, reescrever `vi.fn`/`vi.stubGlobal` (injetar `fetch` no client) e ajustar `test` para `bun test`
-- [ ] 1.9 `bun test` verde em scripts e api-server
+- [x] 1.1 Adicionar `workspaces` (artifacts/*, lib/*, lib/integrations/*, scripts) ao `package.json` raiz
+- [x] 1.2 Inlinar as versões do `catalog` do pnpm em cada `package.json` consumidor (Bun 1.2.10 não tem catalog; 1.2.14+ tem mas com bugs em monorepo)
+- [x] 1.3 Trocar `tsx ./src/*.ts` → `bun ./src/*.ts` nos scripts de `scripts/package.json`
+- [x] 1.4 Trocar os comandos `pnpm --filter`/`pnpm -r` por equivalentes `bun --filter` nos scripts raiz e de app
+- [x] 1.5 Remover `preinstall` (guarda pnpm), `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `.npmrc` (bunfig.toml não necessário)
+- [x] 1.6 Rodar `bun install` e gerar `bun.lock`; confirmar resolução dos workspaces (clean install: 539 pacotes)
+- [ ] 1.7 Smoke da camada de dados sob bun: `bun run migrate` e `bun run db-stats` contra Postgres local — PENDENTE (precisa DB vivo; import de pg/drizzle/@workspace/db sob bun já validado)
+- [x] 1.8 Migrar testes para `bun test`: removidos `vitest.config.ts` (scripts, api-server) e dep `vitest`; `vi.fn`→`mock`, `vi.stubGlobal(fetch)`→swap+restore de `globalThis.fetch`; imports `vitest`→`bun:test` nos 15 arquivos; `@types/bun` + `types:["node","bun"]`
+- [x] 1.9 `bun test` verde em scripts (20/20); api-server PENDENTE (testes de integração precisam de DB)
 
 ## 2. Fase 2 — Remover Replit
 

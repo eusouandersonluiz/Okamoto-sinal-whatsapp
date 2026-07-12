@@ -1,10 +1,15 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, mock, afterEach } from "bun:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { normalizeMessage, normalizeChat, UazapiClient } from "./client";
 
-afterEach(() => vi.unstubAllGlobals());
+// Deterministic fetch mocking without vi.stubGlobal: swap globalThis.fetch and
+// always restore it after each test.
+const realFetch = globalThis.fetch;
+afterEach(() => {
+  globalThis.fetch = realFetch;
+});
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const load = (f: string) =>
@@ -64,11 +69,11 @@ describe("UazapiClient.listMessages paginação", () => {
       },
       { messages: [], hasMore: false },
     ];
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = mock(async () => ({
       ok: true,
       json: async () => pages.shift() ?? { messages: [], hasMore: false },
     }));
-    vi.stubGlobal("fetch", fetchMock);
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
     const client = new UazapiClient("http://x", "tok", 1); // pageSize 1
     const out: string[] = [];
     for await (const m of client.listMessages("c@s.whatsapp.net")) out.push(m.messageId);
