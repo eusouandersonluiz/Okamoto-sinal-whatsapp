@@ -40,7 +40,7 @@ describe("buildInsert", () => {
 
 describe("runImport", () => {
   it("percorre chats + mensagens, mapeia e insere em lote", async () => {
-    const insertRows = vi.fn(async () => {});
+    const insertRows = vi.fn(async (rows) => rows.length);
     const result = await runImport({
       owner: "OWNER",
       listChats: async function* () {
@@ -57,7 +57,7 @@ describe("runImport", () => {
   });
 
   it("descarta mensagens sem message_id", async () => {
-    const insertRows = vi.fn(async () => {});
+    const insertRows = vi.fn(async (rows) => rows.length);
     const result = await runImport({
       owner: "OWNER",
       listChats: async function* () {
@@ -74,7 +74,7 @@ describe("runImport", () => {
   });
 
   it("um chat que falha não aborta os demais", async () => {
-    const insertRows = vi.fn(async () => {});
+    const insertRows = vi.fn(async (rows) => rows.length);
     const result = await runImport({
       owner: "OWNER",
       listChats: async function* () {

@@ -28,7 +28,7 @@ export interface ImportDeps {
   owner: string;
   listChats: () => AsyncIterable<UazChat>;
   listMessages: (chatId: string) => AsyncIterable<UazMessage>;
-  insertRows: (rows: WhatsappInsertRow[]) => Promise<void>;
+  insertRows: (rows: WhatsappInsertRow[]) => Promise<number>;
   log?: (msg: string) => void;
   msgLimit?: number;
 }
@@ -44,27 +44,33 @@ export async function runImport(
 
   const flush = async () => {
     if (buffer.length === 0) return;
-    await deps.insertRows(buffer);
-    inserted += buffer.length;
+    inserted += await deps.insertRows(buffer); // insert errors propagate (fatal)
     buffer = [];
   };
 
   for await (const chat of deps.listChats()) {
     chats++;
     let perChat = 0;
-    // Resiliência: um chat que falha é logado e não aborta os demais (§7).
-    try {
-      for await (const m of deps.listMessages(chat.chatId)) {
-        seen++;
-        // Messages carry no chat display name; take it from the chat.
-        const row = mapMessage(m.chatName ? m : { ...m, chatName: chat.name }, deps.owner);
-        if (!row) continue;
-        buffer.push(row);
-        if (buffer.length >= BATCH) await flush();
-        if (deps.msgLimit && ++perChat >= deps.msgLimit) break;
+    // Catch ONLY message-fetch errors per chat (a failing chat must not abort
+    // the rest). Insert errors from flush() are fatal and must NOT be swallowed.
+    const it = deps.listMessages(chat.chatId)[Symbol.asyncIterator]();
+    for (;;) {
+      let res: IteratorResult<UazMessage>;
+      try {
+        res = await it.next();
+      } catch (e) {
+        log(`chat ${chat.chatId} falhou: ${(e as Error).message} — seguindo`);
+        break;
       }
-    } catch (e) {
-      log(`chat ${chat.chatId} falhou: ${(e as Error).message} — seguindo`);
+      if (res.done) break;
+      const m = res.value;
+      seen++;
+      // Messages carry no chat display name; take it from the chat.
+      const row = mapMessage(m.chatName ? m : { ...m, chatName: chat.name }, deps.owner);
+      if (!row) continue;
+      buffer.push(row);
+      if (buffer.length >= BATCH) await flush();
+      if (deps.msgLimit && ++perChat >= deps.msgLimit) break;
     }
     log(`chat ${chat.chatId}: ${perChat} vistas nesta rodada (total ${seen})`);
   }
@@ -73,13 +79,13 @@ export async function runImport(
 }
 
 async function main(): Promise<void> {
-  const { pool } = await import("@workspace/db");
   const base = process.env.UAZAPI_BASE_URL;
   const token = process.env.UAZAPI_TOKEN;
   const owner = process.env.WHATSAPP_OWNER;
   if (!base || !token) throw new Error("UAZAPI_BASE_URL e UAZAPI_TOKEN são obrigatórios.");
   if (!owner) throw new Error("WHATSAPP_OWNER é obrigatório.");
 
+  const { pool } = await import("@workspace/db");
   const client = new UazapiClient(base, token);
   const chatLimit = Number(process.env.IMPORT_CHAT_LIMIT ?? Infinity);
   const msgLimit = process.env.IMPORT_MSG_LIMIT ? Number(process.env.IMPORT_MSG_LIMIT) : undefined;
@@ -92,7 +98,9 @@ async function main(): Promise<void> {
     log: (m) => console.log(m),
     insertRows: async (rows) => {
       const stmt = buildInsert(rows);
-      if (stmt) await pool.query(stmt.text, stmt.values);
+      if (!stmt) return 0;
+      const res = await pool.query(stmt.text, stmt.values);
+      return res.rowCount ?? 0;
     },
     listChats: async function* () {
       for await (const c of client.listChats()) {
