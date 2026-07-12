@@ -410,48 +410,56 @@ git commit -m "feat(scripts): tipos normalizados uazapi + mapper para whatsapp_m
   - `function normalizeChat(raw: Record<string, unknown>): UazChat`
   - `class UazapiClient` com `listChats(): AsyncIterable<UazChat>` e `listMessages(chatId: string, opts?: { since?: number; limit?: number }): AsyncIterable<UazMessage>`.
 
-> **⚠️ VERIFICAÇÃO OBRIGATÓRIA DE SHAPE (antes de codar este task):** os nomes de
-> endpoints e campos abaixo refletem o formato comum do uazapi, mas variam por
-> versão de instância. Capture UMA resposta real da sua instância e salve como as
-> fixtures deste task; ajuste **apenas** `normalizeMessage`/`normalizeChat` e as
-> constantes de endpoint se os campos diferirem. O teste (que assere sobre o
-> `UazMessage`/`UazChat` normalizado) é o contrato — todo o acoplamento com o
-> uazapi fica confinado a este arquivo.
+> **Shapes confirmados contra a instância real em 2026-07-12.** Endpoints (auth
+> por header `token: <UAZAPI_TOKEN>`):
+> - `POST /chat/find` body `{operator:"AND", sort:"-wa_lastMsgTimestamp", limit, offset}`
+>   → `{ chats: [...], pagination: { totalRecords } }`. Campos de chat usados:
+>   `wa_chatid` (jid), `wa_isGroup`, `name` / `wa_contactName` / `phone`.
+> - `POST /message/find` body `{chatid, sort:"-messageTimestamp", limit, offset}`
+>   → `{ messages: [...], hasMore, nextOffset }`. Campos de mensagem usados:
+>   `messageid`, `chatid`, `fromMe`, `messageType` (ex.: "Conversation",
+>   "ImageMessage"), `text` / `content.text`, `content.caption`, `fileURL`
+>   (mídia), `content.mimetype`, `sender` (pode ser `@lid` em grupos → não é
+>   telefone), `senderName`, `messageTimestamp` (ms), `quoted` (reply), `reaction`.
 >
-> Comandos de captura (substitua BASE/TOKEN/CHATID reais):
-> ```bash
-> curl -s -X POST "$UAZAPI_BASE_URL/chat/find" -H "token: $UAZAPI_TOKEN" -H "Content-Type: application/json" -d '{"limit":1}' | tee scripts/src/uazapi/fixtures/chat-raw.json
-> curl -s -X POST "$UAZAPI_BASE_URL/message/find" -H "token: $UAZAPI_TOKEN" -H "Content-Type: application/json" -d '{"chatid":"<CHATID>","limit":1}' | tee scripts/src/uazapi/fixtures/message-raw.json
-> ```
+> As fixtures abaixo usam valores **sintéticos** (sem PII real). Todo o
+> acoplamento com o uazapi vive neste arquivo — se a instância mudar de versão,
+> ajuste só `normalizeMessage`/`normalizeChat` e os campos de endpoint.
 
-- [ ] **Step 1: Salvar fixtures (uma mensagem e um chat, no shape que o normalizador espera)**
+- [ ] **Step 1: Salvar fixtures (shape real do uazapi, valores sintéticos)**
 
-Create `scripts/src/uazapi/fixtures/message.json` (substitua pelos campos reais capturados):
+Create `scripts/src/uazapi/fixtures/message.json`:
 
 ```json
 {
-  "messageid": "3EB0ABC123",
+  "messageid": "3AFE00000000EXEMPLO",
+  "id": "558193452502:3AFE00000000EXEMPLO",
+  "chatid": "120363000000000000@g.us",
   "fromMe": false,
-  "chatid": "5511999999999@s.whatsapp.net",
-  "sender": "5511999999999@s.whatsapp.net",
-  "senderName": "Fulano",
-  "messageType": "conversation",
-  "text": "oi tudo bem?",
-  "caption": null,
-  "mediaUrl": null,
-  "mimetype": null,
-  "messageTimestamp": 1720000000,
-  "quotedMessageId": null,
-  "isForwarded": false,
-  "reaction": null,
-  "reactedMessageId": null
+  "isGroup": true,
+  "messageType": "Conversation",
+  "text": "mensagem de exemplo",
+  "content": { "text": "mensagem de exemplo" },
+  "fileURL": "",
+  "quoted": "",
+  "reaction": "",
+  "sender": "111111111111111@lid",
+  "senderName": "Contato Exemplo",
+  "messageTimestamp": 1720000000000
 }
 ```
 
 Create `scripts/src/uazapi/fixtures/chat.json`:
 
 ```json
-{ "id": "5511999999999@s.whatsapp.net", "name": "Fulano" }
+{
+  "id": "r0000000000exemplo",
+  "wa_chatid": "5512900000000@s.whatsapp.net",
+  "wa_isGroup": false,
+  "name": "",
+  "wa_contactName": "Cliente Exemplo",
+  "phone": "5512900000000"
+}
 ```
 
 - [ ] **Step 2: Escrever os testes de normalização (falhando)**
@@ -474,33 +482,41 @@ const load = (f: string) =>
 describe("normalizeMessage", () => {
   it("normaliza a fixture para UazMessage", () => {
     const m = normalizeMessage(load("message.json"));
-    expect(m.messageId).toBe("3EB0ABC123");
-    expect(m.chatId).toBe("5511999999999@s.whatsapp.net");
+    expect(m.messageId).toBe("3AFE00000000EXEMPLO");
+    expect(m.chatId).toBe("120363000000000000@g.us");
     expect(m.fromMe).toBe(false);
-    expect(m.senderPhone).toBe("5511999999999");
-    expect(m.text).toBe("oi tudo bem?");
-    expect(m.rawType).toBe("conversation");
+    expect(m.senderPhone).toBeNull(); // sender é @lid, não telefone
+    expect(m.senderName).toBe("Contato Exemplo");
+    expect(m.text).toBe("mensagem de exemplo");
+    expect(m.mediaUrl).toBeNull(); // fileURL vazio
+    expect(m.rawType).toBe("Conversation");
     expect(m.timestampMs).toBe(1_720_000_000_000);
   });
 });
 
 describe("normalizeChat", () => {
-  it("normaliza a fixture para UazChat", () => {
+  it("normaliza a fixture para UazChat (DM usa wa_chatid + wa_contactName)", () => {
     const c = normalizeChat(load("chat.json"));
-    expect(c.chatId).toBe("5511999999999@s.whatsapp.net");
-    expect(c.name).toBe("Fulano");
+    expect(c.chatId).toBe("5512900000000@s.whatsapp.net");
+    expect(c.name).toBe("Cliente Exemplo");
   });
 });
 
 describe("UazapiClient.listMessages paginação", () => {
-  it("segue paginando até um lote menor que o pageSize", async () => {
-    const pages: unknown[][] = [
-      [{ messageid: "1", chatid: "c@s.whatsapp.net", messageType: "conversation", messageTimestamp: 1720000000 }],
-      [],
+  it("segue paginando enquanto hasMore for true", async () => {
+    const pages: unknown[] = [
+      {
+        messages: [
+          { messageid: "1", chatid: "c@s.whatsapp.net", fromMe: false, sender: "c@s.whatsapp.net", senderName: "x", messageType: "Conversation", text: "oi", messageTimestamp: 1720000000000 },
+        ],
+        hasMore: true,
+        nextOffset: 1,
+      },
+      { messages: [], hasMore: false },
     ];
     const fetchMock = vi.fn(async () => ({
       ok: true,
-      json: async () => pages.shift() ?? [],
+      json: async () => pages.shift() ?? { messages: [], hasMore: false },
     }));
     vi.stubGlobal("fetch", fetchMock);
     const client = new UazapiClient("http://x", "tok", 1); // pageSize 1
@@ -524,44 +540,60 @@ Create `scripts/src/uazapi/client.ts`:
 ```ts
 import type { UazMessage, UazChat } from "./types";
 
-// Endpoints/fields reflect the common uazapi shape — VERIFY against your
-// instance and adjust here only (see task header).
+// Endpoints confirmed against the live instance (2026-07-12). All uazapi
+// coupling lives in this file; change only here if the instance version differs.
 const CHAT_ENDPOINT = "/chat/find";
 const MESSAGE_ENDPOINT = "/message/find";
 
 function str(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
+
+// Only "@s.whatsapp.net" jids are real phone numbers. Group senders use "@lid"
+// (WhatsApp linked-id) and group jids use "@g.us" — neither is a phone. Strips a
+// device suffix ("558...:17@s.whatsapp.net") before extracting digits.
 function phoneFromJid(jid: unknown): string | null {
   const s = str(jid);
-  if (!s) return null;
-  const local = s.split("@")[0] ?? s;
+  if (!s || !s.endsWith("@s.whatsapp.net")) return null;
+  const local = (s.split("@")[0] ?? "").split(":")[0] ?? "";
   const digits = local.replace(/\D/g, "");
   return digits.length > 0 ? digits : null;
 }
+
 function toMs(ts: unknown): number {
   const n = typeof ts === "number" ? ts : Number(ts);
   if (!Number.isFinite(n)) return 0;
   return n < 1_000_000_000_000 ? n * 1000 : n; // seconds → ms
 }
 
+// `quoted` is "" when absent, or a string/object carrying the quoted message id.
+function normalizeQuoted(q: unknown): string | null {
+  if (typeof q === "string") return q.length > 0 ? q : null;
+  if (q && typeof q === "object") {
+    const o = q as Record<string, unknown>;
+    return str(o.messageid) ?? str(o.id);
+  }
+  return null;
+}
+
 export function normalizeMessage(raw: Record<string, unknown>): UazMessage {
+  const content = (raw.content ?? {}) as Record<string, unknown>;
   return {
-    messageId: str(raw.messageid) ?? str(raw.id) ?? "",
+    messageId: str(raw.messageid) ?? "",
     chatId: str(raw.chatid) ?? "",
-    chatName: str(raw.chatName) ?? str(raw.senderName) ?? null,
+    chatName: null, // messages carry no chat name; the orchestrator fills it
     fromMe: raw.fromMe === true,
-    senderPhone: phoneFromJid(raw.sender) ?? phoneFromJid(raw.chatid),
-    senderName: str(raw.senderName) ?? str(raw.pushName),
-    text: str(raw.text) ?? str(raw.body) ?? null,
-    caption: str(raw.caption),
-    mediaUrl: str(raw.mediaUrl) ?? str(raw.media),
-    mediaMimeType: str(raw.mimetype) ?? str(raw.mediaMimeType),
-    replyToMessageId: str(raw.quotedMessageId),
-    forwarded: raw.isForwarded === true || raw.forwarded === true,
+    senderPhone: phoneFromJid(raw.sender),
+    senderName: str(raw.senderName),
+    text: str(raw.text) ?? str(content.text),
+    caption: str(content.caption) ?? str(raw.caption),
+    mediaUrl: str(raw.fileURL),
+    mediaMimeType: str(content.mimetype) ?? str(raw.mimetype),
+    replyToMessageId: normalizeQuoted(raw.quoted),
+    forwarded: raw.forwarded === true || raw.isForwarded === true,
     reaction: str(raw.reaction),
-    reactedToMessageId: str(raw.reactedMessageId),
-    timestampMs: toMs(raw.messageTimestamp ?? raw.timestamp),
+    reactedToMessageId: null,
+    timestampMs: toMs(raw.messageTimestamp),
     rawType: str(raw.messageType) ?? "unknown",
     raw,
   };
@@ -569,8 +601,8 @@ export function normalizeMessage(raw: Record<string, unknown>): UazMessage {
 
 export function normalizeChat(raw: Record<string, unknown>): UazChat {
   return {
-    chatId: str(raw.id) ?? str(raw.chatid) ?? "",
-    name: str(raw.name) ?? str(raw.pushName) ?? null,
+    chatId: str(raw.wa_chatid) ?? str(raw.id) ?? "",
+    name: str(raw.name) ?? str(raw.wa_contactName) ?? str(raw.phone) ?? null,
   };
 }
 
@@ -579,7 +611,7 @@ async function postJson(
   token: string,
   endpoint: string,
   body: unknown,
-): Promise<unknown> {
+): Promise<Record<string, unknown>> {
   const maxAttempts = 4;
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(`${base}${endpoint}`, {
@@ -587,26 +619,13 @@ async function postJson(
       headers: { token, "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (res.ok) return res.json();
+    if (res.ok) return (await res.json()) as Record<string, unknown>;
     if ((res.status === 429 || res.status >= 500) && attempt < maxAttempts) {
       await new Promise((r) => setTimeout(r, Math.min(15000, 500 * 2 ** attempt)));
       continue;
     }
     throw new Error(`uazapi ${endpoint} ${res.status}: ${await res.text()}`);
   }
-}
-
-// Extracts the array from whatever envelope the instance returns
-// (top-level array, or { chats/messages/data: [...] }). VERIFY & adjust.
-function asArray(payload: unknown): Record<string, unknown>[] {
-  if (Array.isArray(payload)) return payload as Record<string, unknown>[];
-  if (payload && typeof payload === "object") {
-    for (const key of ["messages", "chats", "data", "result"]) {
-      const v = (payload as Record<string, unknown>)[key];
-      if (Array.isArray(v)) return v as Record<string, unknown>[];
-    }
-  }
-  return [];
 }
 
 export class UazapiClient {
@@ -620,13 +639,16 @@ export class UazapiClient {
     let offset = 0;
     for (;;) {
       const payload = await postJson(this.base, this.token, CHAT_ENDPOINT, {
+        operator: "AND",
+        sort: "-wa_lastMsgTimestamp",
         limit: this.pageSize,
         offset,
       });
-      const batch = asArray(payload);
+      const batch = (payload.chats ?? []) as Record<string, unknown>[];
       for (const c of batch) yield normalizeChat(c);
-      if (batch.length < this.pageSize) return;
       offset += batch.length;
+      const total = (payload.pagination as { totalRecords?: number } | undefined)?.totalRecords ?? 0;
+      if (batch.length === 0 || offset >= total) return;
     }
   }
 
@@ -639,18 +661,19 @@ export class UazapiClient {
     for (;;) {
       const payload = await postJson(this.base, this.token, MESSAGE_ENDPOINT, {
         chatid: chatId,
+        sort: "-messageTimestamp",
         limit: this.pageSize,
         offset,
       });
-      const batch = asArray(payload);
-      for (const m of batch) {
-        const msg = normalizeMessage(m);
+      const batch = (payload.messages ?? []) as Record<string, unknown>[];
+      for (const raw of batch) {
+        const msg = normalizeMessage(raw);
         if (opts.since && msg.timestampMs < opts.since) return;
         yield msg;
         if (opts.limit && ++yielded >= opts.limit) return;
       }
-      if (batch.length < this.pageSize) return;
-      offset += batch.length;
+      if (batch.length === 0 || payload.hasMore !== true) return;
+      offset = (payload.nextOffset as number | undefined) ?? offset + batch.length;
     }
   }
 }
@@ -854,7 +877,8 @@ export async function runImport(
     try {
       for await (const m of deps.listMessages(chat.chatId)) {
         seen++;
-        const row = mapMessage(m, deps.owner);
+        // Messages carry no chat display name; take it from the chat.
+        const row = mapMessage(m.chatName ? m : { ...m, chatName: chat.name }, deps.owner);
         if (!row) continue;
         buffer.push(row);
         if (buffer.length >= BATCH) await flush();
