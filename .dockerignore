@@ -1,0 +1,22 @@
+# Never copy host node_modules (may carry wrong-platform binaries) or build
+# output into the image; the build stage runs a fresh `bun install`.
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.env
+*.log
+.DS_Store
+
+# Agent / editor scaffolding
+.agent
+.codex
+.cursor
+.gemini
+.claude
+.superpowers
+
+# Planning artifacts not needed at build/runtime
+openspec
+docs

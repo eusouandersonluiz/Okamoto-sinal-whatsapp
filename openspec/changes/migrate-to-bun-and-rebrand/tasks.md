@@ -22,12 +22,12 @@
 
 ## 3. Fase 3 — Docker/VPS
 
-- [ ] 3.1 Escrever `Dockerfile` multi-stage: build (`bun install --frozen-lockfile` + `vite build` do front) → runtime (`oven/bun` slim servindo API + `dist`)
-- [ ] 3.2 Definir a API Express para servir os assets estáticos do front buildado
-- [ ] 3.3 Escrever `docker-compose.yml` (serviço app + variáveis de ambiente; Supabase externo/local via `.env`)
-- [ ] 3.4 `docker build` conclui sem erro (inclui binários nativos linux-x64 do Vite/Tailwind)
-- [ ] 3.5 `docker compose up` sobe o contêiner; API responde e front carrega na porta publicada
-- [ ] 3.6 Fixar versão mínima do Bun no `Dockerfile`/`engines`
+- [x] 3.1 `Dockerfile` multi-stage: build (`bun install --frozen-lockfile` + `vite build` + build da api) → runtime (`oven/bun:1.2.10-slim` servindo API + `dist`); `.dockerignore` impede levar node_modules/dist do host
+- [x] 3.2 API Express serve os assets do front via `WEB_DIST` + fallback SPA (regex que exclui `/api/`, compatível com Express 5) em `app.ts`
+- [x] 3.3 `docker-compose.yml` (serviço app + env + `env_file: .env`; Supabase externo)
+- [x] 3.4 `docker build` conclui sem erro no alvo linux (bun install resolve binários linux-x64 do Vite/Tailwind automaticamente)
+- [x] 3.5 `docker run` (env dummy): boot limpo sob bun, `GET /` → 200 servindo index buildado, `/api/health` → 401 (roteamento /api intacto). compose equivalente
+- [x] 3.6 Bun fixado em `oven/bun:1.2.10` (build) e `1.2.10-slim` (runtime)
 
 ## 4. Fase 4 — Rebrand Radar Stark
 
