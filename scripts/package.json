@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "migrate": "tsx ./src/migrate.ts",
+    "create-local-source": "tsx ./src/create-local-source.ts",
     "bootstrap-auth": "tsx ./src/bootstrap-auth.ts",
     "classify-sample": "tsx ./src/classify-sample.ts",
     "backfill-text-full": "tsx ./src/backfill-text-full.ts",
