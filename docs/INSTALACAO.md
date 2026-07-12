@@ -1,18 +1,16 @@
 # Instalação & Configuração
 
-Este guia leva você do zero a uma instância do Sinal rodando. O Sinal é um
-monorepo pnpm com um servidor de API em Express e um frontend em React/Vite,
+Este guia leva você do zero a uma instância do Radar Stark rodando. O Radar Stark é um
+monorepo Bun com um servidor de API em Express e um frontend em React/Vite,
 apoiado por um banco PostgreSQL no Supabase e enriquecido por jobs de IA.
 
-> Lembrete: o Sinal **não tem integração ao vivo com o WhatsApp**. Ele lê uma
+> Lembrete: o Radar Stark **não tem integração ao vivo com o WhatsApp**. Ele lê uma
 > tabela read-only `whatsapp_messages` que você popula no Supabase. Veja
 > [Configuração do banco](#3-configuração-do-banco).
 
 ## 1. Pré-requisitos
 
-- **Node.js 24**
-- **pnpm** (o repositório exige pnpm; npm/yarn são bloqueados por um guard de
-  preinstall)
+- **Bun** (gerenciador de pacotes, runtime e test runner)
 - Um projeto **Supabase** (PostgreSQL + Auth)
 - Uma **chave de API da OpenAI** (para os jobs de IA)
 - Opcional: uma chave da **OpenRouter** para execuções em massa mais baratas, e
@@ -30,7 +28,7 @@ apoiado por um banco PostgreSQL no Supabase e enriquecido por jobs de IA.
 ## 2. Instalar & configurar o ambiente
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env
 ```
 
@@ -52,8 +50,8 @@ Defina também o seu próprio `ADMIN_EMAIL` e `ADMIN_PASSWORD` antes do bootstra
 (provedor de IA, Google OAuth, ajustes de jobs) estão documentadas inline no
 `.env.example`.
 
-**O app lê `process.env` diretamente — não há dotenv.** No Replit, defina como
-Replit Secrets. Localmente, carregue o `.env` no seu shell antes de rodar
+**O app lê `process.env` diretamente.** Ao rodar com Bun, o `.env` da raiz é
+carregado automaticamente; você também pode carregá-lo no shell antes de rodar
 qualquer comando:
 
 ```bash
@@ -65,7 +63,7 @@ set -a && source .env && set +a
 ### 3a. A tabela de origem (`whatsapp_messages`)
 
 Essa tabela é a **fonte de dados read-only** e **não** é criada nem modificada
-pelas migrations do Sinal. Você a fornece. Crie-a no seu banco Supabase e carregue
+pelas migrations do Radar Stark. Você a fornece. Crie-a no seu banco Supabase e carregue
 suas mensagens usando o formato de colunas documentado na
 [seção "Fonte de dados" do README](../README.md#fonte-de-dados). Toda leitura é
 filtrada por `whatsapp_owner = WHATSAPP_OWNER`, e o enriquecimento faz junção por
@@ -73,13 +71,13 @@ filtrada por `whatsapp_owner = WHATSAPP_OWNER`, e o enriquecimento faz junção 
 
 ### 3b. Tabelas do app (migrations)
 
-As migrations criam tudo o que o Sinal *possui* (enrichment, topics, mentions,
+As migrations criam tudo o que o Radar Stark *possui* (enrichment, topics, mentions,
 CRM, tasks, saved, auth/tenancy, Google OAuth). Elas rodam os arquivos SQL em
 `lib/db/migrations` em ordem, de forma idempotente (rastreado em uma tabela
 `_migrations`):
 
 ```bash
-pnpm --filter @workspace/scripts run migrate
+bun run --filter @workspace/scripts migrate
 ```
 
 ### 3c. Crie seu login de admin
@@ -88,7 +86,7 @@ Isso cria (ou atualiza) um único usuário admin via a admin API do Supabase Aut
 o vincula ao tenant do MVP. Usa `ADMIN_EMAIL` / `ADMIN_PASSWORD`:
 
 ```bash
-pnpm --filter @workspace/scripts run bootstrap-auth
+bun run --filter @workspace/scripts bootstrap-auth
 ```
 
 Ele imprime o email/senha para login.
@@ -96,7 +94,7 @@ Ele imprime o email/senha para login.
 ### 3d. Sanidade
 
 ```bash
-pnpm --filter @workspace/scripts run db-stats
+bun run --filter @workspace/scripts db-stats
 ```
 
 ## 4. Rodar os apps
@@ -106,10 +104,10 @@ terminais:
 
 ```bash
 # Terminal 1 — servidor de API
-PORT=8080 pnpm --filter @workspace/api-server run dev
+PORT=8080 bun run --filter @workspace/api-server dev
 
 # Terminal 2 — frontend web
-PORT=5173 BASE_PATH=/ pnpm --filter @workspace/sinal-web run dev
+PORT=5173 BASE_PATH=/ bun run --filter @workspace/radar-web dev
 ```
 
 ### Como o frontend alcança a API
@@ -118,8 +116,8 @@ O frontend chama a API no caminho relativo `/api`. O dev server do Vite **faz
 proxy de `/api` para o servidor de API** (padrão `http://localhost:8080`), então,
 com os dois processos rodando, basta abrir `http://localhost:5173` e o app web
 alcança a API sem configuração extra. Se sua API rodar em outro host ou porta,
-defina `API_PROXY_TARGET` (veja `.env.example`). No Replit, o roteador da
-aplicação faz esse roteamento.
+defina `API_PROXY_TARGET` (veja `.env.example`). Em produção (contêiner), o
+servidor de API serve o front buildado na mesma origem.
 
 ## 5. Jobs de IA & dados
 
@@ -129,12 +127,12 @@ longas podem ultrapassar o timeout do shell sem perder progresso.
 
 | Comando | O que faz |
 | --- | --- |
-| `pnpm --filter @workspace/scripts run db-stats` | Snapshot de saúde dos dados. |
-| `pnpm --filter @workspace/scripts run classify-sample` | Classifica uma amostra de mensagens (env: `SAMPLE_SIZE`, `BATCH_SIZE`). |
-| `pnpm --filter @workspace/scripts run backfill-contacts` | Popula o CRM a partir dos chats privados. |
-| `pnpm --filter @workspace/scripts run build-topics` | Agrupa tópicos enriquecidos em *pautas* nomeadas. |
-| `pnpm --filter @workspace/scripts run build-mentions` | Detecta + classifica menções de entidades (env: `MENTION_SAMPLE`). |
-| `pnpm --filter @workspace/scripts run refresh-all` | Roda o pipeline de refresh completo na ordem (classificar novos → contatos → tópicos → menções). |
+| `bun run --filter @workspace/scripts db-stats` | Snapshot de saúde dos dados. |
+| `bun run --filter @workspace/scripts classify-sample` | Classifica uma amostra de mensagens (env: `SAMPLE_SIZE`, `BATCH_SIZE`). |
+| `bun run --filter @workspace/scripts backfill-contacts` | Popula o CRM a partir dos chats privados. |
+| `bun run --filter @workspace/scripts build-topics` | Agrupa tópicos enriquecidos em *pautas* nomeadas. |
+| `bun run --filter @workspace/scripts build-mentions` | Detecta + classifica menções de entidades (env: `MENTION_SAMPLE`). |
+| `bun run --filter @workspace/scripts refresh-all` | Roda o pipeline de refresh completo na ordem (classificar novos → contatos → tópicos → menções). |
 
 > ⚠️ **Aviso de custo.** `backfill-text-full` classifica o dataset *inteiro*
 > contra uma API paga e pode custar de dezenas a baixas centenas de dólares. Não
@@ -145,8 +143,8 @@ longas podem ultrapassar o timeout do shell sem perder progresso.
 ## 6. Type checking
 
 ```bash
-pnpm run typecheck        # checagem completa em todos os pacotes
-pnpm run typecheck:libs   # apenas as libs compostas — rode após editar lib/*
+bun run typecheck        # checagem completa em todos os pacotes
+bun run typecheck:libs   # apenas as libs compostas — rode após editar lib/*
 ```
 
 ## Solução de problemas

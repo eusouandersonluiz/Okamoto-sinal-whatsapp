@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "openai": "^4.77.0",
-    "zod": "catalog:"
+    "zod": "3.25.76"
   },
   "devDependencies": {
-    "@types/node": "catalog:"
+    "@types/node": "^25.3.3"
   }
 }

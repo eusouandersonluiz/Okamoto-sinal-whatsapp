@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, describe, expect, it } from "vitest";
+import { beforeAll, afterAll, describe, expect, it } from "bun:test";
 import { type Pool, setupHarness } from "../test/fixtures";
 
 let pool: Pool;

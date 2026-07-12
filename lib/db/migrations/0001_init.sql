@@ -1,4 +1,4 @@
--- Sinal — Phase 1 schema. All new tables live in the same Supabase DB as the
+-- Radar Stark — Phase 1 schema. All new tables live in the same Supabase DB as the
 -- read-only source table `whatsapp_messages`. We never alter that table:
 -- no FKs reference it, no indexes are added to it. message_id is stored as
 -- plain text here and referential integrity is enforced in application code.

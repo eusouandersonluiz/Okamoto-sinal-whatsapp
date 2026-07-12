@@ -22,14 +22,17 @@ export function googleClientSecret(): string {
   return v;
 }
 
-// The shared proxy serves the API at /api on the public domain. Google requires
-// this to EXACTLY match the redirect URI registered in the Cloud console.
+// The API is served at /api on the app's public origin. Google requires this to
+// EXACTLY match the redirect URI registered in the Cloud console. Set
+// PUBLIC_APP_URL to the public base URL (e.g. https://radar.example.com).
 export function googleRedirectUri(): string {
-  const domain =
-    process.env.REPLIT_DOMAINS?.split(",")[0]?.trim() ||
-    process.env.REPLIT_DEV_DOMAIN;
-  if (!domain) throw new Error("No REPLIT domain available for redirect URI");
-  return `https://${domain}/api/google/callback`;
+  const base = process.env.PUBLIC_APP_URL?.trim();
+  if (!base) {
+    throw new Error(
+      "PUBLIC_APP_URL is not configured (needed for the Google redirect URI)",
+    );
+  }
+  return `${base.replace(/\/$/, "")}/api/google/callback`;
 }
 
 export function buildAuthUrl(state: string): string {

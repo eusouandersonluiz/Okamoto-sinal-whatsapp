@@ -1,14 +1,14 @@
-# Contribuindo com o Sinal
+# Contribuindo com o Radar Stark
 
-Obrigado pelo interesse em melhorar o Sinal. Este guia cobre a configuração
+Obrigado pelo interesse em melhorar o Radar Stark. Este guia cobre a configuração
 local, as checagens que esperamos que passem e como propor mudanças.
 
 ## Configuração
 
-1. Instale **Node.js 24** e **pnpm**.
+1. Instale o **Bun**.
 2. Faça fork e clone o repositório, depois instale as dependências:
    ```bash
-   pnpm install
+   bun install
    ```
 3. Copie `.env.example` para `.env` e preencha os valores. O app lê `process.env`
    diretamente, então carregue o arquivo no seu shell antes de rodar qualquer
@@ -27,20 +27,20 @@ local, as checagens que esperamos que passem e como propor mudanças.
 Rode o type checker em todos os pacotes — ele precisa passar:
 
 ```bash
-pnpm run typecheck
+bun run typecheck
 ```
 
 Se você editou algo em `lib/*`, compile as libs compostas primeiro para as leaf
 packages não verem declarações desatualizadas:
 
 ```bash
-pnpm run typecheck:libs
+bun run typecheck:libs
 ```
 
 O servidor de API tem testes (Vitest); rode-os ao mexer nele:
 
 ```bash
-pnpm --filter @workspace/api-server run test
+bun run --filter @workspace/api-server test
 ```
 
 ## Convenções
@@ -60,8 +60,8 @@ pnpm --filter @workspace/api-server run test
 ## Segurança
 
 - **Nunca commite `.env` ou qualquer segredo.** `.env` é gitignored; mantenha
-  assim. Chaves reais ficam em Replit Secrets ou no seu `.env` local não
-  versionado.
+  assim. Chaves reais ficam no seu `.env` local não versionado (ou no gerenciador
+  de segredos do seu ambiente de deploy).
 - A chave **service_role do Supabase ignora o RLS** — é apenas do lado do servidor
   e nunca deve chegar ao navegador ou a um commit.
 - Se encontrar um problema de segurança, por favor reporte de forma privada em vez

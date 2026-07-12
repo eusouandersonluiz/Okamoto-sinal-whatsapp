@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, describe, expect, it } from "vitest";
+import { beforeAll, afterAll, describe, expect, it } from "bun:test";
 import request from "supertest";
 
 // Same harness as media.test.ts / metrics.test.ts: never touch the read-only

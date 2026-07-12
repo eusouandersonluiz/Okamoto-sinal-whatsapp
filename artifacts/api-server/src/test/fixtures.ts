@@ -1,4 +1,4 @@
-import { expect } from "vitest";
+import { expect } from "bun:test";
 import request from "supertest";
 
 // Shared harness for the API parity suites (media, metrics, groups, mentions).

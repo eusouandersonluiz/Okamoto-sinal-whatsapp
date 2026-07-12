@@ -1,7 +1,7 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 
-// Sinal uses the Supabase database (same DB as the read-only whatsapp_messages
+// Radar Stark uses the Supabase database (same DB as the read-only whatsapp_messages
 // source). Schema is applied via raw SQL migrations (lib/db/migrations) to
 // avoid drizzle-kit touching the source table; this config exists for
 // introspection/tooling only.
