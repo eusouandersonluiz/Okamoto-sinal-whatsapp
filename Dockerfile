@@ -13,7 +13,7 @@ RUN bun install --frozen-lockfile
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV BASE_PATH=/
-RUN bun run --filter @workspace/sinal-web build \
+RUN bun run --filter @workspace/radar-web build \
  && bun run --filter @workspace/api-server build
 
 # ── runtime stage ────────────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ ENV PORT=8080
 ENV WEB_DIST=/app/web
 
 COPY --from=build /app/artifacts/api-server/dist ./api
-COPY --from=build /app/artifacts/sinal-web/dist/public ./web
+COPY --from=build /app/artifacts/radar-web/dist/public ./web
 
 EXPOSE 8080
 CMD ["bun", "api/index.mjs"]

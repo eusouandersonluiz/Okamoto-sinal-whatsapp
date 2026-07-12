@@ -5,7 +5,7 @@
 Importação sob demanda do histórico de WhatsApp de uma instância uazapi para o
 mirror local `whatsapp_messages`, com normalização isolada do provedor, upsert
 idempotente por `message_id` e resiliência por chat. Existe para permitir rodar o
-Sinal localmente (Supabase em Docker) sem violar o contrato read-only da
+Radar Stark localmente (Supabase em Docker) sem violar o contrato read-only da
 tabela-fonte usada em produção.
 
 ## Requirements

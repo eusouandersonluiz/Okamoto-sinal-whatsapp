@@ -12,13 +12,13 @@ const router: IRouter = Router();
 function callbackPage(status: "connected" | "denied" | "error"): string {
   const msg =
     status === "connected"
-      ? "Google conectado com sucesso. Você pode fechar esta aba e voltar ao Sinal."
+      ? "Google conectado com sucesso. Você pode fechar esta aba e voltar ao Radar Stark."
       : status === "denied"
         ? "Conexão com o Google cancelada. Pode fechar esta aba."
         : "Falha ao conectar com o Google. Feche esta aba e tente novamente.";
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sinal · Google</title>
+<title>Radar Stark · Google</title>
 <style>
   body{margin:0;background:#0B0B0F;color:#ECECF1;font-family:ui-sans-serif,system-ui,sans-serif;
        display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:24px}

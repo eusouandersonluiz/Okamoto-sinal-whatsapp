@@ -31,12 +31,12 @@
 
 ## 4. Fase 4 — Rebrand Radar Stark
 
-- [ ] 4.1 `git mv artifacts/sinal-web artifacts/radar-web` e `artifacts/sinal-deck artifacts/radar-deck`
-- [ ] 4.2 Atualizar `name` (`@workspace/radar-web`, `@workspace/radar-deck`) e todas as referências de workspace/scripts a esses pacotes
-- [ ] 4.3 Substituir a string de produto "Sinal" → "Radar Stark" em UI, títulos e slides
-- [ ] 4.4 Substituir "Sinal" → "Radar Stark" em README, docs e CONTRIBUTING
-- [ ] 4.5 `bun install` + build/typecheck íntegros após o rename
-- [ ] 4.6 `grep -r "Sinal\|sinal"` (excl. node_modules, .git, arquivados) sem ocorrência de nome de produto
+- [x] 4.1 `git mv artifacts/sinal-web artifacts/radar-web` e `artifacts/sinal-deck artifacts/radar-deck`; removido cruft `.replit-artifact/` dos 4 apps
+- [x] 4.2 `name` → `@workspace/radar-web`/`@workspace/radar-deck`; refs atualizadas no Dockerfile (filter + COPY) e docs
+- [x] 4.3 "Sinal" → "Radar Stark" em UI, títulos, slides e URLs de marca (`sinal.app` → `radar.app`)
+- [x] 4.4 "Sinal" → "Radar Stark" em README, docs e CONTRIBUTING; wordplay do README reescrito ("um radar que separa o sinal do ruído")
+- [x] 4.5 `bun install` reconciliou; radar-web/radar-deck/api-server buildam; `bun test` 20/20
+- [x] 4.6 `grep` de nome de produto ("Sinal", "sinal.app") = zero. Mantidos por decisão: identificadores internos (`sinal_session`, par `sinal-google`), conceito "sinal sobre/à ruído" e `project_id` do supabase local
 
 ## 5. Verificação final
 

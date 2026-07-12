@@ -1,10 +1,10 @@
-# Sinal
+# Radar Stark
 
-**Inteligência de WhatsApp + CRM.** O Sinal transforma um grande arquivo de
+**Inteligência de WhatsApp + CRM.** O Radar Stark transforma um grande arquivo de
 mensagens de WhatsApp (já armazenadas no Supabase) em um cockpit acionável: o que
 precisa de resposta, o que está em alta nos seus grupos, quem está te mencionando
-e um CRM de contatos — tudo em português do Brasil. O nome é *sinal* sobre
-*ruído*.
+e um CRM de contatos — tudo em português do Brasil. Um radar que separa o
+*sinal* do *ruído*.
 
 > Projeto original de **Bruno Okamoto**.
 > Projeto **gratuito e open source** sob licença [MIT](LICENSE): qualquer pessoa
@@ -12,10 +12,10 @@ e um CRM de contatos — tudo em português do Brasil. O nome é *sinal* sobre
 > credenciais e adaptar como quiser. Use como base para criar a sua versão.
 
 > ### ⚠️ Não existe integração ao vivo com o WhatsApp
-> O Sinal **apenas lê** dados. As mensagens são **pré-carregadas em uma tabela
+> O Radar Stark **apenas lê** dados. As mensagens são **pré-carregadas em uma tabela
 > read-only do Supabase** (`whatsapp_messages`); o app lê essa tabela e a
 > enriquece com IA. **Não há telefone para conectar, nenhuma API do WhatsApp e
-> nada nunca é enviado.** Para usar o Sinal você traz os seus próprios dados de
+> nada nunca é enviado.** Para usar o Radar Stark você traz os seus próprios dados de
 > mensagens para o Supabase — veja [Fonte de dados](#fonte-de-dados). Agir no
 > WhatsApp continua sendo papel de um humano.
 
@@ -58,9 +58,9 @@ Um monorepo pnpm com três grupos de nível superior:
 - **`lib/*`** — bibliotecas compartilhadas: `db` (schema Drizzle + pool +
   migrations), `ai` (classificação, clustering, menções, taxonomia) e os pacotes
   de cliente/spec/zod da API.
-- **`artifacts/*`** — apps publicáveis: `api-server` (Express) e `sinal-web`
+- **`artifacts/*`** — apps publicáveis: `api-server` (Express) e `radar-web`
   (React/Vite). `mockup-sandbox` guarda referências estáticas de design e
-  `sinal-deck` é a apresentação do projeto.
+  `radar-deck` é a apresentação do projeto.
 - **`scripts/*`** — jobs de dados e IA (migrations, bootstrap de auth, backfills,
   construtores de tópicos/menções).
 
@@ -81,7 +81,7 @@ pnpm --filter @workspace/scripts run bootstrap-auth   # cria seu login de admin
 
 # em dois terminais (cada um com o env carregado):
 PORT=8080 pnpm --filter @workspace/api-server run dev
-PORT=5173 BASE_PATH=/ pnpm --filter @workspace/sinal-web run dev
+PORT=5173 BASE_PATH=/ pnpm --filter @workspace/radar-web run dev
 ```
 
 O servidor de desenvolvimento web faz proxy de `/api` para o servidor de API,
@@ -103,7 +103,7 @@ Supabase e os jobs de IA — está em **[docs/INSTALACAO.md](docs/INSTALACAO.md)
 
 ## Fonte de dados
 
-O Sinal lê uma única tabela read-only, `whatsapp_messages`, no seu banco
+O Radar Stark lê uma única tabela read-only, `whatsapp_messages`, no seu banco
 Supabase. O app nunca escreve nela. Para trazer seus próprios dados, carregue
 linhas com este formato (colunas de texto, salvo indicação):
 
@@ -125,7 +125,7 @@ linhas com este formato (colunas de texto, salvo indicação):
 | `message_created_at` (timestamptz) | horário da mensagem |
 | `metadata` (jsonb) | extras específicos da origem |
 
-Tudo o que o Sinal calcula (tópicos, menções, CRM, enriquecimento) vive em
+Tudo o que o Radar Stark calcula (tópicos, menções, CRM, enriquecimento) vive em
 tabelas separadas, próprias do app, criadas pelas migrations e ligadas por
 `message_id`. A tabela de origem nunca é modificada.
 

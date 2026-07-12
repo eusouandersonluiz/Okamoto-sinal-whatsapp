@@ -102,8 +102,8 @@
         "zod": "3.25.76",
       },
     },
-    "artifacts/sinal-deck": {
-      "name": "@workspace/sinal-deck",
+    "artifacts/radar-deck": {
+      "name": "@workspace/radar-deck",
       "version": "0.0.0",
       "devDependencies": {
         "@tailwindcss/vite": "^4.1.14",
@@ -119,8 +119,8 @@
         "zod": "3.25.76",
       },
     },
-    "artifacts/sinal-web": {
-      "name": "@workspace/sinal-web",
+    "artifacts/radar-web": {
+      "name": "@workspace/radar-web",
       "version": "0.0.0",
       "devDependencies": {
         "@hookform/resolvers": "^3.10.0",
@@ -736,11 +736,11 @@
 
     "@workspace/mockup-sandbox": ["@workspace/mockup-sandbox@workspace:artifacts/mockup-sandbox"],
 
+    "@workspace/radar-deck": ["@workspace/radar-deck@workspace:artifacts/radar-deck"],
+
+    "@workspace/radar-web": ["@workspace/radar-web@workspace:artifacts/radar-web"],
+
     "@workspace/scripts": ["@workspace/scripts@workspace:scripts"],
-
-    "@workspace/sinal-deck": ["@workspace/sinal-deck@workspace:artifacts/sinal-deck"],
-
-    "@workspace/sinal-web": ["@workspace/sinal-web@workspace:artifacts/sinal-web"],
 
     "abort-controller": ["abort-controller@3.0.0", "", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 

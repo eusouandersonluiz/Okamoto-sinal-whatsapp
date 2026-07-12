@@ -1,12 +1,12 @@
 # Fluxo do Supabase
 
-Este documento explica como o Sinal se conecta ao Supabase, como a tabela de
+Este documento explica como o Radar Stark se conecta ao Supabase, como a tabela de
 origem read-only funciona, o modelo multi-tenant + RLS, e a estrutura de todas as
 tabelas próprias do projeto.
 
 ## Conexão
 
-O Sinal usa o PostgreSQL do Supabase via Drizzle ORM sobre um pool `pg`. A lógica
+O Radar Stark usa o PostgreSQL do Supabase via Drizzle ORM sobre um pool `pg`. A lógica
 de conexão vive em `lib/db/src/index.ts`.
 
 - **String de conexão.** O pool lê `SUPABASE_DB_URL` (com `DATABASE_URL` como
@@ -27,7 +27,7 @@ de conexão vive em `lib/db/src/index.ts`.
 
 `whatsapp_messages` é a **fonte de dados read-only**. É externa ao app:
 
-- **Nunca escrita, nunca migrada.** As migrations do Sinal não a criam nem a
+- **Nunca escrita, nunca migrada.** As migrations do Radar Stark não a criam nem a
   alteram. Você a cria e popula no seu projeto Supabase (veja a estrutura na
   [seção "Fonte de dados" do README](../README.md#fonte-de-dados)).
 - **Sem foreign keys, sem índices adicionados pelo app.** A chave de junção para
@@ -45,7 +45,7 @@ O espelho tipado (apenas para consultas convenientes via Drizzle) está em
 
 ## Multi-tenant + RLS
 
-O Sinal é multi-tenant desde o dia um:
+O Radar Stark é multi-tenant desde o dia um:
 
 - Toda tabela **própria do app** tem uma coluna `tenant_id` e RLS habilitado.
 - O id de tenant do MVP é `00000000-0000-0000-0000-000000000001`.

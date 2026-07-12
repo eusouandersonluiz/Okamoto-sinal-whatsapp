@@ -1,6 +1,6 @@
 # Arquitetura
 
-O Sinal é um monorepo pnpm-workspace. Os dados fluem em uma direção: uma tabela
+O Radar Stark é um monorepo pnpm-workspace. Os dados fluem em uma direção: uma tabela
 de origem read-only é enriquecida por jobs de IA em tabelas próprias do app, que
 uma API Express serve a um frontend React.
 
@@ -34,7 +34,7 @@ uma API Express serve a um frontend React.
            │ HTTP (/api, mesma origem)
            ▼
 ┌─────────────────────┐
-│   Frontend Web      │   artifacts/sinal-web (React + Vite)
+│   Frontend Web      │   artifacts/radar-web (React + Vite)
 │   hooks React Query │   todo número abre as mensagens de origem
 └─────────────────────┘
 ```
@@ -97,13 +97,13 @@ toda leitura por `tenant_id` e owner.
     a cada 6h), `src/lib/logger.ts`.
   - As rotas são **escritas à mão**, mantidas em sincronia com o cliente do
     frontend de propósito (não é codegen OpenAPI).
-- **`@workspace/sinal-web`** — frontend React + Vite + Tailwind v4 + shadcn/ui.
+- **`@workspace/radar-web`** — frontend React + Vite + Tailwind v4 + shadcn/ui.
   - Páginas: `src/pages/*` — `overview`, `privado`, `grupos`, `mencoes`,
     `contatos`, `salvos`, `midia`, `conectores`, `login`, `not-found`.
   - Cliente de API tipado + hooks React Query, escritos à mão: `src/lib/api.ts`
     (fala com `/api`).
   - Shell do app + gate de auth: `src/App.tsx`.
-- **`@workspace/sinal-deck`** — apresentação do projeto (slides).
+- **`@workspace/radar-deck`** — apresentação do projeto (slides).
 - **`mockup-sandbox`** — referências estáticas de design, fora do app em execução.
 
 ### `scripts/*` — jobs de dados & IA (`@workspace/scripts`)

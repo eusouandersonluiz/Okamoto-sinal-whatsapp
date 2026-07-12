@@ -1,6 +1,6 @@
-# Contribuindo com o Sinal
+# Contribuindo com o Radar Stark
 
-Obrigado pelo interesse em melhorar o Sinal. Este guia cobre a configuração
+Obrigado pelo interesse em melhorar o Radar Stark. Este guia cobre a configuração
 local, as checagens que esperamos que passem e como propor mudanças.
 
 ## Configuração

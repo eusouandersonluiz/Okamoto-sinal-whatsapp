@@ -1,4 +1,4 @@
-# Rodar o Sinal local com importação via uazapi
+# Rodar o Radar Stark local com importação via uazapi
 
 Pré-requisitos: Node 24, pnpm, Docker (para o Supabase local), CLI do Supabase,
 uma instância uazapi com número já conectado (token em mãos), chave OpenAI.
@@ -70,7 +70,7 @@ Em dois terminais (cada um com o env carregado):
 
 ```bash
 PORT=8080 pnpm --filter @workspace/api-server run dev
-PORT=5173 BASE_PATH=/ pnpm --filter @workspace/sinal-web run dev
+PORT=5173 BASE_PATH=/ pnpm --filter @workspace/radar-web run dev
 ```
 
 Abra http://localhost:5173 e entre com ADMIN_EMAIL / ADMIN_PASSWORD.

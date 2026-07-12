@@ -1,10 +1,10 @@
 # Instalação & Configuração
 
-Este guia leva você do zero a uma instância do Sinal rodando. O Sinal é um
+Este guia leva você do zero a uma instância do Radar Stark rodando. O Radar Stark é um
 monorepo pnpm com um servidor de API em Express e um frontend em React/Vite,
 apoiado por um banco PostgreSQL no Supabase e enriquecido por jobs de IA.
 
-> Lembrete: o Sinal **não tem integração ao vivo com o WhatsApp**. Ele lê uma
+> Lembrete: o Radar Stark **não tem integração ao vivo com o WhatsApp**. Ele lê uma
 > tabela read-only `whatsapp_messages` que você popula no Supabase. Veja
 > [Configuração do banco](#3-configuração-do-banco).
 
@@ -65,7 +65,7 @@ set -a && source .env && set +a
 ### 3a. A tabela de origem (`whatsapp_messages`)
 
 Essa tabela é a **fonte de dados read-only** e **não** é criada nem modificada
-pelas migrations do Sinal. Você a fornece. Crie-a no seu banco Supabase e carregue
+pelas migrations do Radar Stark. Você a fornece. Crie-a no seu banco Supabase e carregue
 suas mensagens usando o formato de colunas documentado na
 [seção "Fonte de dados" do README](../README.md#fonte-de-dados). Toda leitura é
 filtrada por `whatsapp_owner = WHATSAPP_OWNER`, e o enriquecimento faz junção por
@@ -73,7 +73,7 @@ filtrada por `whatsapp_owner = WHATSAPP_OWNER`, e o enriquecimento faz junção 
 
 ### 3b. Tabelas do app (migrations)
 
-As migrations criam tudo o que o Sinal *possui* (enrichment, topics, mentions,
+As migrations criam tudo o que o Radar Stark *possui* (enrichment, topics, mentions,
 CRM, tasks, saved, auth/tenancy, Google OAuth). Elas rodam os arquivos SQL em
 `lib/db/migrations` em ordem, de forma idempotente (rastreado em uma tabela
 `_migrations`):
@@ -109,7 +109,7 @@ terminais:
 PORT=8080 pnpm --filter @workspace/api-server run dev
 
 # Terminal 2 — frontend web
-PORT=5173 BASE_PATH=/ pnpm --filter @workspace/sinal-web run dev
+PORT=5173 BASE_PATH=/ pnpm --filter @workspace/radar-web run dev
 ```
 
 ### Como o frontend alcança a API
