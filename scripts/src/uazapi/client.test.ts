@@ -25,6 +25,25 @@ describe("normalizeMessage", () => {
   });
 });
 
+describe("normalizeMessage senderPhone (jid parsing)", () => {
+  const rawWith = (sender: string) => ({
+    messageid: "X",
+    chatid: "c@s.whatsapp.net",
+    fromMe: false,
+    sender,
+    senderName: "n",
+    messageType: "Conversation",
+    text: "t",
+    messageTimestamp: 1720000000000,
+  });
+  it("extrai telefone de jid @s.whatsapp.net removendo sufixo de device", () => {
+    expect(normalizeMessage(rawWith("550000000000:17@s.whatsapp.net")).senderPhone).toBe("550000000000");
+  });
+  it("retorna null para sender de grupo @g.us", () => {
+    expect(normalizeMessage(rawWith("120363000000000000@g.us")).senderPhone).toBeNull();
+  });
+});
+
 describe("normalizeChat", () => {
   it("normaliza a fixture para UazChat (DM usa wa_chatid + wa_contactName)", () => {
     const c = normalizeChat(load("chat.json"));
