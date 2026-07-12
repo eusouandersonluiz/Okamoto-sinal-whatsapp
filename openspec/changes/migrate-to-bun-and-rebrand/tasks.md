@@ -12,13 +12,13 @@
 
 ## 2. Fase 2 — Remover Replit
 
-- [ ] 2.1 Apagar `.replit`, `.replitignore`, `replit.nix`, `replit.md`, `scripts/post-merge.sh`
-- [ ] 2.2 Remover deps `@replit/vite-plugin-cartographer`, `-dev-banner`, `-runtime-error-modal` dos `package.json` e seu uso nos 3 `vite.config.ts`
-- [ ] 2.3 Remover `stripe-replit-sync` e confirmar que nada de cobrança depende dele
-- [ ] 2.4 Remover refs a Replit em `artifacts/api-server/src/lib/auth.ts` e demais códigos
-- [ ] 2.5 Ajustar o deck: remover slide `Replit.tsx`, atualizar `OpenSource.tsx`/`Title.tsx`/`ComoFunciona.tsx` e `slides-manifest.json` sem quebrar a navegação
-- [ ] 2.6 Limpar menções a Replit em `README.md`, `CONTRIBUTING.md` e `docs/*`
-- [ ] 2.7 `grep -ri "replit"` (excl. node_modules, .git, openspec/changes/archive) retorna zero
+- [x] 2.1 Apagar `.replit`, `.replitignore`, `replit.nix`, `replit.md`, `scripts/post-merge.sh`
+- [x] 2.2 Remover deps `@replit/vite-plugin-*` (feito na Fase 1) e seu uso nos 3 `vite.config.ts`; ambos os apps front buildam sob bun+vite
+- [x] 2.3 `stripe-replit-sync` não existia no código (só no `pnpm-workspace.yaml` já removido) — nada a fazer
+- [x] 2.4 Substituir `REPLIT_DOMAINS`/`REPLIT_DEV_DOMAIN` em `google.ts` por `PUBLIC_APP_URL` (funcional); reescrever comentário Replit em `auth.ts` (comportamento do cookie mantido)
+- [x] 2.5 Deck: removido slide `Replit.tsx`, entrada do manifesto removida + positions renumeradas, texto Replit tirado de `Title/ComoFunciona/OpenSource`, `index.html` (og/twitter replit.com) limpo
+- [x] 2.6 Menções a Replit removidas em `README.md`, `CONTRIBUTING.md`, `docs/ARQUITETURA|INSTALACAO|SUPABASE`, `.env.example`, `.gitignore`
+- [x] 2.7 `grep -ri "replit"` retorna zero em código/docs ativos (exceção documentada: `attached_assets/` = PRD histórico/arquivado)
 
 ## 3. Fase 3 — Docker/VPS
 

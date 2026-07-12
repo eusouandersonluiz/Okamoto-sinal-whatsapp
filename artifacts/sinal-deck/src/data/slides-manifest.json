@@ -5,7 +5,7 @@
     "filepath": "src/pages/slides/Title.tsx",
     "title": "Sinal",
     "description": "Slide de abertura: Sinal, inteligência de WhatsApp + CRM sobre ~85 mil mensagens.",
-    "speakerNotes": "Apresente o Sinal: um cockpit que transforma cerca de 85 mil mensagens de WhatsApp em decisões. Sete áreas de inteligência, tudo em português, open source e construído no Replit."
+    "speakerNotes": "Apresente o Sinal: um cockpit que transforma cerca de 85 mil mensagens de WhatsApp em decisões. Sete áreas de inteligência, tudo em português, open source."
   },
   {
     "id": "problema",
@@ -80,16 +80,8 @@
     "speakerNotes": "Onde decisões viram ações: salve qualquer mensagem ou contato, faça a triagem de convites e acompanhe tarefas por prazo, das mais urgentes primeiro."
   },
   {
-    "id": "construido-no-replit",
-    "position": 11,
-    "filepath": "src/pages/slides/Replit.tsx",
-    "title": "Construído no Replit",
-    "description": "Stack e processo: frontend, backend, dados, IA e operação, tudo no Replit.",
-    "speakerNotes": "Tudo foi desenvolvido e roda no Replit: React no frontend, Express no backend, Supabase/Postgres com Drizzle nos dados, OpenAI na IA e um pipeline agendado para manter tudo atualizado."
-  },
-  {
     "id": "valor",
-    "position": 12,
+    "position": 11,
     "filepath": "src/pages/slides/Valor.tsx",
     "title": "Valor gerado",
     "description": "Resultado: foco, memória e visão — de ~85 mil mensagens a decisões.",
@@ -97,10 +89,10 @@
   },
   {
     "id": "open-source",
-    "position": 13,
+    "position": 12,
     "filepath": "src/pages/slides/OpenSource.tsx",
     "title": "Open source",
     "description": "Encerramento: o Sinal será aberto — conecte, rode o pipeline e use o cockpit.",
-    "speakerNotes": "Encerre convidando: o Sinal será disponibilizado como open source. Conecte sua base, rode o pipeline e use o cockpit. Em breve no GitHub, construído no Replit."
+    "speakerNotes": "Encerre convidando: o Sinal será disponibilizado como open source. Conecte sua base, rode o pipeline e use o cockpit. Em breve no GitHub."
   }
 ]

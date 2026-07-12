@@ -6,7 +6,7 @@ precisa de resposta, o que está em alta nos seus grupos, quem está te menciona
 e um CRM de contatos — tudo em português do Brasil. O nome é *sinal* sobre
 *ruído*.
 
-> Feito por **Bruno Okamoto** usando o **[Replit](https://replit.com)**.
+> Projeto original de **Bruno Okamoto**.
 > Projeto **gratuito e open source** sob licença [MIT](LICENSE): qualquer pessoa
 > pode visualizar o que acontece no seu WhatsApp, clonar, instalar com as próprias
 > credenciais e adaptar como quiser. Use como base para criar a sua versão.

@@ -21,8 +21,7 @@ de conexão vive em `lib/db/src/index.ts`.
   manualmente (veja abaixo).
 
 > Dica de operação: nas consultas ad hoc ao banco de produção, use
-> `psql "$SUPABASE_DB_URL"`. O sandbox de execução de código atinge um banco
-> diferente (o banco do Replit), **não** o Supabase.
+> `psql "$SUPABASE_DB_URL"`.
 
 ## A tabela de origem: `whatsapp_messages`
 

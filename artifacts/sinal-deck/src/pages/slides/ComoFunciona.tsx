@@ -77,7 +77,7 @@ export default function ComoFunciona() {
             Stack
           </div>
           <div className="text-[1.5vw] font-semibold text-primary">
-            Replit · TypeScript · Express · Supabase/Postgres · Drizzle · OpenAI · React
+            Bun · TypeScript · Express · Supabase/Postgres · Drizzle · OpenAI · React
           </div>
         </div>
       </div>

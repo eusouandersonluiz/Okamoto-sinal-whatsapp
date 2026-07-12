@@ -52,8 +52,8 @@ Defina também o seu próprio `ADMIN_EMAIL` e `ADMIN_PASSWORD` antes do bootstra
 (provedor de IA, Google OAuth, ajustes de jobs) estão documentadas inline no
 `.env.example`.
 
-**O app lê `process.env` diretamente — não há dotenv.** No Replit, defina como
-Replit Secrets. Localmente, carregue o `.env` no seu shell antes de rodar
+**O app lê `process.env` diretamente.** Ao rodar com Bun, o `.env` da raiz é
+carregado automaticamente; você também pode carregá-lo no shell antes de rodar
 qualquer comando:
 
 ```bash
@@ -118,8 +118,8 @@ O frontend chama a API no caminho relativo `/api`. O dev server do Vite **faz
 proxy de `/api` para o servidor de API** (padrão `http://localhost:8080`), então,
 com os dois processos rodando, basta abrir `http://localhost:5173` e o app web
 alcança a API sem configuração extra. Se sua API rodar em outro host ou porta,
-defina `API_PROXY_TARGET` (veja `.env.example`). No Replit, o roteador da
-aplicação faz esse roteamento.
+defina `API_PROXY_TARGET` (veja `.env.example`). Em produção (contêiner), o
+servidor de API serve o front buildado na mesma origem.
 
 ## 5. Jobs de IA & dados
 

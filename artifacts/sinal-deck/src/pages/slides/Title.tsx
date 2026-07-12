@@ -74,8 +74,6 @@ export default function Title() {
         <div>Sinal — Inteligência de WhatsApp + CRM</div>
         <div className="flex gap-[0.8vw]">
           <span>Open source</span>
-          <span>·</span>
-          <span>Construído no Replit</span>
         </div>
       </div>
     </div>

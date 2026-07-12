@@ -46,7 +46,7 @@ export default function OpenSource() {
         </div>
 
         <div className="mt-[5vh] text-[2vw] font-semibold text-primary">
-          Em breve no GitHub · Construído no Replit
+          Em breve no GitHub
         </div>
       </div>
 

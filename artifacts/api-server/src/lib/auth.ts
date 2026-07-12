@@ -73,9 +73,10 @@ export function verifySessionToken(token: string): SessionPayload | null {
   }
 }
 
-// The app runs inside a cross-site iframe (the Replit preview), so the session
-// cookie must be SameSite=None + Secure (and Partitioned for CHIPS) or browsers
-// will refuse to send it back, making logins appear to "not stick".
+// Session cookie is SameSite=None + Secure (and Partitioned for CHIPS) so it
+// survives cross-site embedding (e.g. an iframe preview). If the app is only
+// ever served same-origin, SameSite=Lax would be simpler — revisit per deploy.
+// Note: Secure requires HTTPS (browsers still allow it on http://localhost).
 export function setSessionCookie(res: Response, token: string): void {
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,

@@ -40,8 +40,8 @@ uma API Express serve a um frontend React.
 ```
 
 Em desenvolvimento, o servidor Vite faz proxy de `/api` para o servidor de API
-(configurável via `API_PROXY_TARGET`); no Replit o roteador da aplicação faz o
-mesmo. De qualquer forma, o navegador vê uma única origem, e a API dá escopo a
+(configurável via `API_PROXY_TARGET`); em produção (contêiner) o servidor de API
+serve o front buildado. De qualquer forma, o navegador vê uma única origem, e a API dá escopo a
 toda leitura por `tenant_id` e owner.
 
 ## Estrutura do monorepo

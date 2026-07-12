@@ -60,8 +60,8 @@ pnpm --filter @workspace/api-server run test
 ## Segurança
 
 - **Nunca commite `.env` ou qualquer segredo.** `.env` é gitignored; mantenha
-  assim. Chaves reais ficam em Replit Secrets ou no seu `.env` local não
-  versionado.
+  assim. Chaves reais ficam no seu `.env` local não versionado (ou no gerenciador
+  de segredos do seu ambiente de deploy).
 - A chave **service_role do Supabase ignora o RLS** — é apenas do lado do servidor
   e nunca deve chegar ao navegador ou a um commit.
 - Se encontrar um problema de segurança, por favor reporte de forma privada em vez
