@@ -1,6 +1,6 @@
 # Arquitetura
 
-O Radar Stark é um monorepo pnpm-workspace. Os dados fluem em uma direção: uma tabela
+O Radar Stark é um monorepo Bun (workspaces). Os dados fluem em uma direção: uma tabela
 de origem read-only é enriquecida por jobs de IA em tabelas próprias do app, que
 uma API Express serve a um frontend React.
 
@@ -137,6 +137,6 @@ demais). É pensado para ser o comando de um Scheduled Deployment (cron).
 ## Convenções
 
 - TypeScript em todos os pacotes; imports do subpath `zod/v4`.
-- Após editar `lib/*`, rode `pnpm run typecheck:libs` antes das checagens de tipo
+- Após editar `lib/*`, rode `bun run typecheck:libs` antes das checagens de tipo
   das leaf packages (declarações desatualizadas causam erros fantasmas).
 - A UI é em português do Brasil e sem emojis — apenas ícones `lucide-react`.

@@ -37,7 +37,7 @@ de Contatos do Google fica em Conectores.)
 
 ## Stack
 
-- **Monorepo:** pnpm workspaces, Node.js 24, TypeScript 5.9
+- **Monorepo:** Bun workspaces, TypeScript 5.9
 - **API:** Express 5 (rotas escritas à mão, sessão por cookie)
 - **Banco de dados:** Supabase PostgreSQL + Drizzle ORM
 - **IA:** OpenAI (direto), com OpenRouter opcional para execuções em massa mais
@@ -53,7 +53,7 @@ whatsapp_messages   (scripts +       (topics, mentions,    (Express,        fron
                                                             escopo)
 ```
 
-Um monorepo pnpm com três grupos de nível superior:
+Um monorepo Bun com três grupos de nível superior:
 
 - **`lib/*`** — bibliotecas compartilhadas: `db` (schema Drizzle + pool +
   migrations), `ai` (classificação, clustering, menções, taxonomia) e os pacotes
@@ -68,26 +68,39 @@ Detalhes completos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 
 ## Início rápido
 
-Você precisa de **Node.js 24** e **pnpm**, mais um projeto **Supabase** e uma
+Você precisa do **Bun**, mais um projeto **Supabase** e uma
 **chave de API da OpenAI**.
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env        # depois preencha os valores
 set -a && source .env && set +a
 
-pnpm --filter @workspace/scripts run migrate          # cria as tabelas do app
-pnpm --filter @workspace/scripts run bootstrap-auth   # cria seu login de admin
+bun run --filter @workspace/scripts migrate          # cria as tabelas do app
+bun run --filter @workspace/scripts bootstrap-auth   # cria seu login de admin
 
 # em dois terminais (cada um com o env carregado):
-PORT=8080 pnpm --filter @workspace/api-server run dev
-PORT=5173 BASE_PATH=/ pnpm --filter @workspace/radar-web run dev
+PORT=8080 bun run --filter @workspace/api-server dev
+PORT=5173 BASE_PATH=/ bun run --filter @workspace/radar-web dev
 ```
 
 O servidor de desenvolvimento web faz proxy de `/api` para o servidor de API,
 então, com os dois no ar, você abre `http://localhost:5173` e tudo funciona
 localmente. O passo a passo completo — variáveis de ambiente, configuração do
 Supabase e os jobs de IA — está em **[docs/INSTALACAO.md](docs/INSTALACAO.md)**.
+
+## Deploy (Docker)
+
+Para produção (ex.: VPS), o app roda como um único contêiner Bun: o servidor de
+API serve os assets do front buildado na mesma origem.
+
+```bash
+cp .env.example .env        # preencha os segredos (Supabase, OpenAI, etc.)
+docker compose up --build   # builda a imagem e sobe na porta 8080
+```
+
+O `Dockerfile` é multi-stage (build com `bun install` + `vite build`; runtime
+`oven/bun` servindo `api/index.mjs` com `WEB_DIST` apontando para o front).
 
 ## Documentação
 
@@ -131,8 +144,8 @@ tabelas separadas, próprias do app, criadas pelas migrations e ligadas por
 
 ## Contribuindo
 
-Veja [CONTRIBUTING.md](CONTRIBUTING.md). Em resumo: `pnpm install`, rode
-`pnpm run typecheck`, crie um branch e abra um PR. Nunca commite `.env` ou
+Veja [CONTRIBUTING.md](CONTRIBUTING.md). Em resumo: `bun install`, rode
+`bun run typecheck`, crie um branch e abra um PR. Nunca commite `.env` ou
 segredos.
 
 ## Licença

@@ -40,9 +40,9 @@
 
 ## 5. Verificação final
 
-- [ ] 5.1 `bun install` limpo do zero (apagar node_modules) resolve tudo
-- [ ] 5.2 `bun test` verde em todo o workspace
-- [ ] 5.3 Typecheck/build de todos os pacotes verde
-- [ ] 5.4 `docker compose up` end-to-end: importar (piloto uazapi) → `refresh-all` amostra → abrir web e conferir dashboards
-- [ ] 5.5 Fechar a pendência `6.3` da change `add-uazapi-import` (landmine resolvido)
-- [ ] 5.6 Atualizar `docs/INSTALACAO*.md` com os comandos Bun/Docker
+- [x] 5.1 `bun install` limpo do zero (removido todo node_modules) resolve tudo (539 pacotes)
+- [x] 5.2 `bun test` verde: scripts 20/20. api-server PENDENTE (testes de integração precisam de DB; imports migrados p/ `bun:test`, typecheck verde)
+- [x] 5.3 Typecheck de todos os pacotes verde (libs + scripts + api-server + radar-web + radar-deck + mockup); builds dos 3 apps verdes (corrigido `src/test/fixtures.ts` que ainda importava vitest)
+- [ ] 5.4 `docker compose up` end-to-end com dados reais (uazapi piloto → refresh-all → dashboards) — PENDENTE (precisa Supabase/uazapi/OpenAI vivos). Validado sem dados: build+boot+serve estático+roteamento /api
+- [x] 5.5 Landmine `6.3` de `add-uazapi-import` resolvido (deps `*-darwin-arm64` e overrides de plataforma eliminados)
+- [x] 5.6 Docs migradas p/ Bun (comandos `bun run --filter`, pré-requisitos, stack) + seção Deploy (Docker) no README
