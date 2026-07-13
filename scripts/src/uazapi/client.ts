@@ -5,6 +5,7 @@ import type { UazMessage, UazChat, UazGroup, UazGroupInfo } from "./types";
 const CHAT_ENDPOINT = "/chat/find";
 const MESSAGE_ENDPOINT = "/message/find";
 const GROUP_INFO_ENDPOINT = "/group/info";
+const HISTORY_SYNC_ENDPOINT = "/message/history-sync";
 
 function str(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
@@ -218,6 +219,31 @@ export class UazapiClient {
         return;
       }
     }
+  }
+
+  // Requests on-demand history from WhatsApp for a chat, going backward from the
+  // anchor message (POST /message/history-sync). Delivery is ASYNCHRONOUS: WhatsApp
+  // pushes older messages later (they then appear via listMessages). Returns the
+  // raw ack payload. What WhatsApp actually delivers is outside our control.
+  async requestHistorySync(chatId: string, messageid: string, count = 200): Promise<Record<string, unknown>> {
+    return postJson(this.base, this.token, HISTORY_SYNC_ENDPOINT, {
+      number: chatId,
+      mode: "history",
+      messageid,
+      count,
+    });
+  }
+
+  // Oldest message currently known for a chat (ascending fetch, 1 row).
+  async oldestMessage(chatId: string): Promise<UazMessage | null> {
+    const payload = await postJson(this.base, this.token, MESSAGE_ENDPOINT, {
+      chatid: chatId,
+      sort: "messageTimestamp",
+      limit: 1,
+      offset: 0,
+    });
+    const batch = (payload.messages ?? []) as Record<string, unknown>[];
+    return batch[0] ? normalizeMessage(batch[0]) : null;
   }
 
   // Members + count for one group (POST /group/info).
