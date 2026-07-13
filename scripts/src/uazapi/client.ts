@@ -1,9 +1,10 @@
-import type { UazMessage, UazChat, UazGroup } from "./types";
+import type { UazMessage, UazChat, UazGroup, UazGroupInfo } from "./types";
 
 // Endpoints confirmed against the live instance (2026-07-12). All uazapi
 // coupling lives in this file; change only here if the instance version differs.
 const CHAT_ENDPOINT = "/chat/find";
 const MESSAGE_ENDPOINT = "/message/find";
+const GROUP_INFO_ENDPOINT = "/group/info";
 
 function str(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
@@ -88,6 +89,31 @@ export function normalizeGroup(raw: Record<string, unknown>): UazGroup {
       num(raw.wa_groupSize) ??
       num(raw.participantsCount) ??
       (Array.isArray(participants) ? participants.length : null),
+  };
+}
+
+// Normalizes POST /group/info. Confirmed shape: `ParticipantCount` (int) and
+// `Participants[]` with { LID, JID, PhoneNumber, DisplayName, IsAdmin,
+// IsSuperAdmin }. PhoneNumber may be a jid or bare digits, or absent (privacy).
+export function normalizeGroupInfo(raw: Record<string, unknown>): UazGroupInfo {
+  const parts = Array.isArray(raw.Participants) ? raw.Participants : [];
+  return {
+    // The instance sometimes reports ParticipantCount as 0 while Participants is
+    // populated, so fall back to the array length (|| not ??) when it is 0/absent.
+    participantCount: (num(raw.ParticipantCount) || parts.length) || null,
+    participants: parts
+      .map((p) => {
+        const o = (p ?? {}) as Record<string, unknown>;
+        const phoneRaw = str(o.PhoneNumber) ?? "";
+        const digits = (phoneRaw.split("@")[0] ?? "").replace(/\D/g, "");
+        return {
+          lid: str(o.LID) ?? str(o.JID) ?? "",
+          phone: digits.length > 0 ? digits : null,
+          name: str(o.DisplayName),
+          isAdmin: o.IsAdmin === true || o.IsSuperAdmin === true,
+        };
+      })
+      .filter((p) => p.lid.length > 0),
   };
 }
 
@@ -179,6 +205,14 @@ export class UazapiClient {
         return;
       }
     }
+  }
+
+  // Members + count for one group (POST /group/info).
+  async getGroupInfo(chatId: string): Promise<UazGroupInfo> {
+    const payload = await postJson(this.base, this.token, GROUP_INFO_ENDPOINT, {
+      groupjid: chatId,
+    });
+    return normalizeGroupInfo(payload);
   }
 
   async *listMessages(

@@ -11,6 +11,7 @@ import AppShell from "@/components/layout/AppShell";
 import Login from "@/pages/login";
 import Overview from "@/pages/overview";
 import Grupos from "@/pages/grupos";
+import GrupoDetalhe from "@/pages/grupo-detalhe";
 import Midia from "@/pages/midia";
 import NotFound from "@/pages/not-found";
 
@@ -44,6 +45,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Overview} />
       <Route path="/grupos" component={Grupos} />
+      <Route path="/grupos/:chatId" component={GrupoDetalhe} />
       <Route path="/midia" component={Midia} />
       <Route component={NotFound} />
     </Switch>

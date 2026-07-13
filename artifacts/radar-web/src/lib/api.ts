@@ -4,6 +4,7 @@
 
 import {
   useQuery,
+  useInfiniteQuery,
   useMutation,
   useQueryClient,
   type UseQueryOptions,
@@ -1176,6 +1177,49 @@ export function useArchiveGroup() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["groups"] }),
+  });
+}
+
+export interface GroupParticipant {
+  lid: string;
+  phone: string | null;
+  name: string | null;
+  is_admin: boolean;
+}
+
+export function useGroupParticipants(chatId: string | undefined) {
+  return useQuery({
+    queryKey: ["groups", chatId, "participants"],
+    queryFn: () =>
+      apiFetch<{ participants: GroupParticipant[] }>(`/groups/${chatId}/participants`),
+    select: (d) => d.participants,
+    enabled: !!chatId,
+  });
+}
+
+export interface GroupMessage {
+  message_id: string;
+  sender_name: string | null;
+  direction: string | null;
+  message_created_at: string;
+  text: string | null;
+  media_url: string | null;
+  media_mime_type: string | null;
+  reply_to_message_id: string | null;
+  reaction: string | null;
+}
+
+// Paginated (cursor) message timeline for a group. Newest-first per page.
+export function useGroupMessages(chatId: string | undefined) {
+  return useInfiniteQuery({
+    queryKey: ["groups", chatId, "messages"],
+    queryFn: ({ pageParam }) =>
+      apiFetch<{ messages: GroupMessage[]; nextBefore: string | null }>(
+        `/groups/${chatId}/messages${qs({ before: pageParam ?? undefined, limit: 50 })}`,
+      ),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextBefore,
+    enabled: !!chatId,
   });
 }
 

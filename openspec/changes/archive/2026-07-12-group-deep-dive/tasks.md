@@ -1,0 +1,34 @@
+## 1. DB — participantes
+
+- [x] 1.1 Migration aditiva: tabela `group_participants` (`tenant_id`, `chat_id`, `lid`, `phone`, `name`, `is_admin`, unique `(tenant_id, chat_id, lid)`) + coluna `groups.participant_count`
+- [x] 1.2 Schema Drizzle: `groupParticipantsTable` + `participantCount` em `groupsTable`
+- [x] 1.3 `migrate` aplica limpo (idempotente); colunas/índice confirmados
+
+## 2. Import — /group/info
+
+- [x] 2.1 `client.ts`: `getGroupInfo(jid)` (POST /group/info) + `normalizeGroupInfo` → `{ participantCount, participants: [{lid, phone, name, isAdmin}] }` + fixture `group-info.json`
+- [x] 2.2 Teste de `normalizeGroupInfo` (fixture) sob `bun test`
+- [x] 2.3 `import-uazapi`: `buildParticipantUpsert` + upsert de participantes e `participant_count` por grupo (respeita IMPORT_CHAT_LIMIT + resiliência por grupo)
+- [x] 2.4 Teste do orquestrador (upsert de participantes) sob `bun test`
+- [x] 2.5 Piloto local: participantes + contagem populados em `group_participants`/`groups`
+
+## 3. API — timeline + participantes
+
+- [x] 3.1 `GET /groups/:chatId/messages?before&limit`: timeline paginada por cursor (whatsapp_messages, cronológica, campos de remetente/horário/conteúdo/mídia)
+- [x] 3.2 `GET /groups/:chatId/participants`: lista de `group_participants`
+- [x] 3.3 `GET /groups` e detalhe usam `groups.participant_count` (não mais derivado)
+- [ ] 3.4 Testes de rota sob `bun test` — PENDENTE (integração, precisa DB; endpoints validados por curl no app vivo)
+
+## 4. Front — detalhe do grupo
+
+- [x] 4.1 Hooks no `api.ts`: `useGroupMessages` (paginado/`useInfiniteQuery` ou load-more) + `useGroupParticipants`
+- [x] 4.2 Rota `/grupos/:chatId` (detalhe): timeline com "carregar mais" + lista de participantes
+- [x] 4.3 Link do card de grupo → detalhe; contagem real de participantes na lista
+- [x] 4.4 Router (App.tsx) + navegação
+
+## 5. Verificação
+
+- [x] 5.1 typecheck verde em todos os pacotes; `bun test` verde
+- [x] 5.2 `docker build` ok
+- [x] 5.3 e2e local: import (participantes) → login → `GET /groups/:id/messages` e `/participants` retornam dados; contagem real
+- [x] 5.4 Front: abrir um grupo, ver timeline (load-more) + participantes

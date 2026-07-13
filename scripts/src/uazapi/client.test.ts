@@ -2,7 +2,7 @@ import { describe, it, expect, mock, afterEach } from "bun:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { normalizeMessage, normalizeChat, normalizeGroup, UazapiClient } from "./client";
+import { normalizeMessage, normalizeChat, normalizeGroup, normalizeGroupInfo, UazapiClient } from "./client";
 
 // Deterministic fetch mocking without vi.stubGlobal: swap globalThis.fetch and
 // always restore it after each test.
@@ -67,6 +67,28 @@ describe("normalizeGroup", () => {
   it("captura contagem de participantes quando presente", () => {
     const g = normalizeGroup({ wa_chatid: "1@g.us", wa_name: "X", wa_groupSize: 42 });
     expect(g.participantsCount).toBe(42);
+  });
+});
+
+describe("normalizeGroupInfo", () => {
+  it("normaliza participantes e contagem da fixture de /group/info", () => {
+    const gi = normalizeGroupInfo(load("group-info.json"));
+    expect(gi.participantCount).toBe(3);
+    expect(gi.participants.length).toBe(3);
+    const first = gi.participants[0]!;
+    expect(first.lid).toBe("111111@lid");
+    expect(first.phone).toBe("5511000000000");
+    expect(first.name).toBe("Fulano");
+    expect(first.isAdmin).toBe(true);
+  });
+  it("extrai telefone de jid e trata ausência (phone null)", () => {
+    const gi = normalizeGroupInfo(load("group-info.json"));
+    expect(gi.participants[1]!.phone).toBe("5511000000001"); // veio como jid
+    expect(gi.participants[2]!.phone).toBeNull(); // sem PhoneNumber
+  });
+  it("cai para o tamanho da lista quando ParticipantCount vem 0", () => {
+    const gi = normalizeGroupInfo({ ParticipantCount: 0, Participants: [{ LID: "a@lid" }, { LID: "b@lid" }] });
+    expect(gi.participantCount).toBe(2);
   });
 });
 

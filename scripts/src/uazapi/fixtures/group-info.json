@@ -1,0 +1,10 @@
+{
+  "Name": "Grupo Exemplo",
+  "JID": "120363000000000000@g.us",
+  "ParticipantCount": 3,
+  "Participants": [
+    { "JID": "5511000000000@s.whatsapp.net", "LID": "111111@lid", "PhoneNumber": "5511000000000", "DisplayName": "Fulano", "IsAdmin": true, "IsSuperAdmin": false },
+    { "JID": "5511000000001@s.whatsapp.net", "LID": "222222@lid", "PhoneNumber": "5511000000001@s.whatsapp.net", "DisplayName": "Beltrano", "IsAdmin": false, "IsSuperAdmin": false },
+    { "JID": "", "LID": "333333@lid", "PhoneNumber": "", "DisplayName": "Sem Telefone", "IsAdmin": false, "IsSuperAdmin": false }
+  ]
+}
