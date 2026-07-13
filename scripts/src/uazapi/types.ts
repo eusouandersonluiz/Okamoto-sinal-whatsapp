@@ -34,3 +34,15 @@ export interface UazGroup {
   name: string | null;
   participantsCount: number | null;
 }
+
+export interface UazParticipant {
+  lid: string; // stable linked-id
+  phone: string | null; // digits, or null (privacy / lid-only)
+  name: string | null;
+  isAdmin: boolean;
+}
+
+export interface UazGroupInfo {
+  participantCount: number | null;
+  participants: UazParticipant[];
+}

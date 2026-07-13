@@ -6,11 +6,11 @@
 
 ## 2. Import — /group/info
 
-- [ ] 2.1 `client.ts`: `getGroupInfo(jid)` (POST /group/info) + `normalizeGroupInfo` → `{ participantCount, participants: [{lid, phone, name, isAdmin}] }` + fixture `group-info.json`
-- [ ] 2.2 Teste de `normalizeGroupInfo` (fixture) sob `bun test`
-- [ ] 2.3 `import-uazapi`: `buildParticipantUpsert` + upsert de participantes e `participant_count` por grupo (respeita IMPORT_CHAT_LIMIT + resiliência por grupo)
-- [ ] 2.4 Teste do orquestrador (upsert de participantes) sob `bun test`
-- [ ] 2.5 Piloto local: participantes + contagem populados em `group_participants`/`groups`
+- [x] 2.1 `client.ts`: `getGroupInfo(jid)` (POST /group/info) + `normalizeGroupInfo` → `{ participantCount, participants: [{lid, phone, name, isAdmin}] }` + fixture `group-info.json`
+- [x] 2.2 Teste de `normalizeGroupInfo` (fixture) sob `bun test`
+- [x] 2.3 `import-uazapi`: `buildParticipantUpsert` + upsert de participantes e `participant_count` por grupo (respeita IMPORT_CHAT_LIMIT + resiliência por grupo)
+- [x] 2.4 Teste do orquestrador (upsert de participantes) sob `bun test`
+- [x] 2.5 Piloto local: participantes + contagem populados em `group_participants`/`groups`
 
 ## 3. API — timeline + participantes
 

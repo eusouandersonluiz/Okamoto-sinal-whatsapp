@@ -1,5 +1,5 @@
 import { UazapiClient } from "./uazapi/client";
-import type { UazGroup, UazMessage } from "./uazapi/types";
+import type { UazGroup, UazMessage, UazParticipant } from "./uazapi/types";
 import { mapMessage, WHATSAPP_COLUMNS, type WhatsappInsertRow } from "./uazapi/mapper";
 
 const BATCH = 500;
@@ -48,6 +48,29 @@ export function buildGroupUpsert(
   return { text, values };
 }
 
+// Upserts group members into group_participants (keyed by lid) and returns the
+// statement. Management/message data untouched.
+export function buildParticipantUpsert(
+  chatId: string,
+  tenantId: string,
+  participants: UazParticipant[],
+): { text: string; values: unknown[] } | null {
+  if (participants.length === 0) return null;
+  const chatKey = chatId.split("@")[0] ?? chatId;
+  const values: unknown[] = [];
+  const tuples = participants.map((p) => {
+    values.push(tenantId, chatKey, p.lid, p.phone, p.name, p.isAdmin);
+    const n = values.length;
+    return `($${n - 5},$${n - 4},$${n - 3},$${n - 2},$${n - 1},$${n})`;
+  });
+  const text =
+    `insert into group_participants (tenant_id, chat_id, lid, phone, name, is_admin) ` +
+    `values ${tuples.join(",")} ` +
+    `on conflict (tenant_id, chat_id, lid) do update set ` +
+    `phone = excluded.phone, name = excluded.name, is_admin = excluded.is_admin, updated_at = now()`;
+  return { text, values };
+}
+
 export interface ImportDeps {
   owner: string;
   tenantId: string;
@@ -55,6 +78,9 @@ export interface ImportDeps {
   listMessages: (chatId: string) => AsyncIterable<UazMessage>;
   insertRows: (rows: WhatsappInsertRow[]) => Promise<number>;
   upsertGroups: (groups: UazGroup[]) => Promise<void>;
+  // Optional: fetch + persist participants/count for one group. A failure here
+  // is logged and skipped (resilience per group), never aborting the import.
+  syncParticipants?: (chatId: string) => Promise<void>;
   log?: (msg: string) => void;
   msgLimit?: number;
 }
@@ -87,6 +113,15 @@ export async function runImport(
     groups++;
     rosterBuffer.push(group);
     if (rosterBuffer.length >= BATCH) await flushRoster();
+
+    // Participants (own try: a failing /group/info must not abort the import).
+    if (deps.syncParticipants) {
+      try {
+        await deps.syncParticipants(group.chatId);
+      } catch (e) {
+        log(`grupo ${group.chatId} participantes falharam: ${(e as Error).message} — seguindo`);
+      }
+    }
 
     let perGroup = 0;
     // Catch ONLY message-fetch errors per group. Insert errors from flush() are
@@ -132,6 +167,7 @@ async function main(): Promise<void> {
   const msgLimit = process.env.IMPORT_MSG_LIMIT ? Number(process.env.IMPORT_MSG_LIMIT) : undefined;
   const since = process.env.IMPORT_SINCE ? Date.parse(process.env.IMPORT_SINCE) : undefined;
 
+  const skipParticipants = process.env.IMPORT_SKIP_PARTICIPANTS === "1";
   let groupsDone = 0;
   const result = await runImport({
     owner,
@@ -148,6 +184,20 @@ async function main(): Promise<void> {
       const stmt = buildGroupUpsert(gs, tenantId);
       if (stmt) await pool.query(stmt.text, stmt.values);
     },
+    syncParticipants: skipParticipants
+      ? undefined
+      : async (chatId) => {
+          const info = await client.getGroupInfo(chatId);
+          const chatKey = chatId.split("@")[0] ?? chatId;
+          const stmt = buildParticipantUpsert(chatId, tenantId, info.participants);
+          if (stmt) await pool.query(stmt.text, stmt.values);
+          if (info.participantCount != null) {
+            await pool.query(
+              `update groups set participant_count = $1 where tenant_id = $2 and chat_id = $3`,
+              [info.participantCount, tenantId, chatKey],
+            );
+          }
+        },
     listGroups: async function* () {
       for await (const g of client.listGroups()) {
         if (groupsDone++ >= chatLimit) return;

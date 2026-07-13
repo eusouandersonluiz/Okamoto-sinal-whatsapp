@@ -1,5 +1,5 @@
 import { describe, it, expect, mock } from "bun:test";
-import { buildInsert, buildGroupUpsert, runImport } from "./import-uazapi";
+import { buildInsert, buildGroupUpsert, buildParticipantUpsert, runImport } from "./import-uazapi";
 import { mapMessage } from "./uazapi/mapper";
 import type { UazMessage, UazGroup } from "./uazapi/types";
 
@@ -58,10 +58,28 @@ describe("buildGroupUpsert", () => {
   });
 });
 
+describe("buildParticipantUpsert", () => {
+  it("upsert por lid com on conflict do update", () => {
+    const stmt = buildParticipantUpsert(
+      "120363000000000000@g.us",
+      TENANT,
+      [{ lid: "1@lid", phone: "5511", name: "Fulano", isAdmin: true }],
+    )!;
+    expect(stmt.text).toContain("insert into group_participants");
+    expect(stmt.text).toContain("on conflict (tenant_id, chat_id, lid) do update");
+    expect(stmt.values).toEqual([TENANT, "120363000000000000", "1@lid", "5511", "Fulano", true]);
+  });
+
+  it("retorna null para lista vazia", () => {
+    expect(buildParticipantUpsert("c@g.us", TENANT, [])).toBeNull();
+  });
+});
+
 describe("runImport (só grupos + roster)", () => {
-  it("percorre grupos: upsert roster + importa mensagens", async () => {
+  it("percorre grupos: upsert roster + importa mensagens + sync participantes", async () => {
     const insertRows = mock(async (rows: unknown[]) => rows.length);
     const upsertGroups = mock(async () => {});
+    const syncParticipants = mock(async () => {});
     const result = await runImport({
       owner: "OWNER",
       tenantId: TENANT,
@@ -74,10 +92,35 @@ describe("runImport (só grupos + roster)", () => {
       },
       insertRows,
       upsertGroups,
+      syncParticipants,
     });
     expect(result).toEqual({ groups: 1, seen: 2, inserted: 2 });
     expect(upsertGroups).toHaveBeenCalledTimes(1);
     expect(insertRows).toHaveBeenCalledTimes(1);
+    expect(syncParticipants).toHaveBeenCalledTimes(1);
+  });
+
+  it("falha em participantes de um grupo não aborta o import", async () => {
+    const insertRows = mock(async (rows: unknown[]) => rows.length);
+    const upsertGroups = mock(async () => {});
+    const syncParticipants = mock(async () => {
+      throw new Error("group/info boom");
+    });
+    const result = await runImport({
+      owner: "OWNER",
+      tenantId: TENANT,
+      listGroups: async function* () {
+        yield grp("120363000000000000@g.us");
+      },
+      listMessages: async function* () {
+        yield msg("A");
+      },
+      insertRows,
+      upsertGroups,
+      syncParticipants,
+    });
+    expect(result.groups).toBe(1);
+    expect(result.inserted).toBe(1); // mensagens seguem apesar do erro de participantes
   });
 
   it("registra grupo silencioso (sem mensagens) no roster", async () => {
