@@ -1,13 +1,8 @@
 export * from "./tenancy";
-export * from "./crm";
 export * from "./enrichment";
 export * from "./topics";
-export * from "./mentions";
 export * from "./groups";
-export * from "./tasks";
-export * from "./saved";
 export * from "./whatsapp";
-export * from "./google";
 export * from "./refresh";
 
 // Canonical tenant for the MVP (Bruno = tenant #1).
