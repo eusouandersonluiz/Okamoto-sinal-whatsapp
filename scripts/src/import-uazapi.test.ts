@@ -94,10 +94,37 @@ describe("runImport (só grupos + roster)", () => {
       upsertGroups,
       syncParticipants,
     });
-    expect(result).toEqual({ groups: 1, seen: 2, inserted: 2 });
+    expect(result).toEqual({ groups: 1, seen: 2, inserted: 2, emptyGroups: 0 });
     expect(upsertGroups).toHaveBeenCalledTimes(1);
     expect(insertRows).toHaveBeenCalledTimes(1);
     expect(syncParticipants).toHaveBeenCalledTimes(1);
+  });
+
+  it("resume pula grupos já feitos e conta grupos sem mensagem", async () => {
+    const insertRows = mock(async (rows: unknown[]) => rows.length);
+    const upsertGroups = mock(async () => {});
+    const syncParticipants = mock(async () => {});
+    const isGroupDone = mock(async (chatId: string) => chatId.startsWith("DONE"));
+    const result = await runImport({
+      owner: "OWNER",
+      tenantId: TENANT,
+      groupsTotal: 2,
+      isGroupDone,
+      listGroups: async function* () {
+        yield grp("DONE@g.us");
+        yield grp("120363000000000000@g.us");
+      },
+      // eslint-disable-next-line require-yield
+      listMessages: async function* () {
+        return; // segundo grupo sem mensagens
+      },
+      insertRows,
+      upsertGroups,
+      syncParticipants,
+    });
+    expect(result.groups).toBe(2);
+    expect(result.emptyGroups).toBe(1); // o não-pulado ficou sem mensagem
+    expect(syncParticipants).toHaveBeenCalledTimes(1); // só o não-pulado
   });
 
   it("falha em participantes de um grupo não aborta o import", async () => {

@@ -182,6 +182,19 @@ export class UazapiClient {
     }
   }
 
+  // Total number of groups available (for progress denominators).
+  async countGroups(): Promise<number> {
+    const payload = await postJson(this.base, this.token, CHAT_ENDPOINT, {
+      operator: "AND",
+      sort: "-wa_lastMsgTimestamp",
+      limit: 1,
+      offset: 0,
+      wa_isGroup: true,
+    });
+    const total = (payload.pagination as { totalRecords?: number } | undefined)?.totalRecords;
+    return typeof total === "number" ? total : 0;
+  }
+
   // Full group roster: POST /chat/find with wa_isGroup:true, paginated. Yields
   // every group (incl. quiet ones) so the group-management surface can list them.
   async *listGroups(): AsyncIterable<UazGroup> {
