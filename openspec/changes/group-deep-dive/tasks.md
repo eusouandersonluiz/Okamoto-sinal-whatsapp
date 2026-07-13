@@ -14,10 +14,10 @@
 
 ## 3. API — timeline + participantes
 
-- [ ] 3.1 `GET /groups/:chatId/messages?before&limit`: timeline paginada por cursor (whatsapp_messages, cronológica, campos de remetente/horário/conteúdo/mídia)
-- [ ] 3.2 `GET /groups/:chatId/participants`: lista de `group_participants`
-- [ ] 3.3 `GET /groups` e detalhe usam `groups.participant_count` (não mais derivado)
-- [ ] 3.4 Testes de rota sob `bun test` (quando houver DB)
+- [x] 3.1 `GET /groups/:chatId/messages?before&limit`: timeline paginada por cursor (whatsapp_messages, cronológica, campos de remetente/horário/conteúdo/mídia)
+- [x] 3.2 `GET /groups/:chatId/participants`: lista de `group_participants`
+- [x] 3.3 `GET /groups` e detalhe usam `groups.participant_count` (não mais derivado)
+- [ ] 3.4 Testes de rota sob `bun test` — PENDENTE (integração, precisa DB; endpoints validados por curl no app vivo)
 
 ## 4. Front — detalhe do grupo
 

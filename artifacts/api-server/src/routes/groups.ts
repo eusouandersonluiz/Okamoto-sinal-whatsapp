@@ -35,13 +35,12 @@ router.get("/groups", async (req: AuthedRequest, res) => {
             g.digest_cadence,
             g.archived_at,
             coalesce(s.message_count, 0) as message_count,
-            coalesce(s.participants, 0) as participants,
+            coalesce(g.participant_count, 0) as participants,
             s.last_activity_at
        from groups g
        left join (
          select chat_id,
                 count(*)::int as message_count,
-                count(distinct sender_phone)::int as participants,
                 max(message_created_at) as last_activity_at
            from whatsapp_messages
           where whatsapp_owner = $1 and chat_type = 'group' and chat_id is not null
@@ -137,6 +136,50 @@ router.get("/groups/:chatId/digest", async (req: AuthedRequest, res) => {
     digest: digest.rows[0] ?? null,
     recentExcerpts: excerpts.rows,
   });
+});
+
+// Full message timeline for a group, paginated by cursor. `before` is the ISO
+// timestamp of the oldest message already shown; rows come newest-first and the
+// front reverses them for chronological display. Reads whatsapp_messages (read-only).
+router.get("/groups/:chatId/messages", async (req: AuthedRequest, res) => {
+  const { chatId } = req.params;
+  const limit = Math.min(Number(req.query.limit ?? 50), 200);
+  const before = typeof req.query.before === "string" ? req.query.before : null;
+  const params: unknown[] = [OWNER, chatId];
+  let cursor = "";
+  if (before) {
+    params.push(before);
+    cursor = `and message_created_at < $${params.length}`;
+  }
+  params.push(limit);
+  const { rows } = await pool.query(
+    `select message_id, sender_name, direction, message_created_at,
+            coalesce(nullif(message,''), caption, transcription) as text,
+            media_url, media_mime_type, reply_to_message_id, reaction
+       from whatsapp_messages
+      where whatsapp_owner = $1 and chat_id = $2 and chat_type = 'group'
+        ${cursor}
+      order by message_created_at desc
+      limit $${params.length}`,
+    params,
+  );
+  const nextBefore =
+    rows.length === limit ? (rows[rows.length - 1]?.message_created_at ?? null) : null;
+  res.json({ messages: rows, nextBefore });
+});
+
+// Group participants (members fetched from uazapi /group/info by the import).
+router.get("/groups/:chatId/participants", async (req: AuthedRequest, res) => {
+  const t = req.auth!.tenantId;
+  const { chatId } = req.params;
+  const { rows } = await pool.query(
+    `select lid, phone, name, is_admin
+       from group_participants
+      where tenant_id = $1 and chat_id = $2
+      order by is_admin desc, name nulls last`,
+    [t, chatId],
+  );
+  res.json({ participants: rows });
 });
 
 export default router;
