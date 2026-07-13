@@ -25,3 +25,12 @@ export interface UazChat {
   chatId: string; // raw jid
   name: string | null;
 }
+
+// A group from the uazapi roster (all groups, incl. ones with no recent
+// messages). participantsCount is optional: the /chat/find roster does not carry
+// it, so it may be null until fetched per-group.
+export interface UazGroup {
+  chatId: string; // group jid, "...@g.us"
+  name: string | null;
+  participantsCount: number | null;
+}

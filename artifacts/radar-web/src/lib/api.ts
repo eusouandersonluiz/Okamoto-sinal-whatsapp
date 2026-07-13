@@ -541,7 +541,7 @@ export const qk = {
   topics: (scope?: string, crossgroup?: boolean) =>
     ["topics", scope, crossgroup] as const,
   topic: (id: string) => ["topics", id] as const,
-  groups: (limit?: number) => ["groups", limit] as const,
+  groups: (key?: string) => ["groups", key] as const,
   groupDigest: (chatId: string) => ["groups", chatId, "digest"] as const,
   mentions: (entity?: string, type?: string, includeSupport?: boolean) =>
     ["mentions", entity, type, includeSupport ?? false] as const,
@@ -1110,11 +1110,29 @@ export function useTopic(
 
 /* ----------------------------- Groups ----------------------------- */
 
-export function useGroups(limit = 50) {
+// Managed group row returned by GET /groups (management state + live stats).
+export interface GroupRow {
+  chat_id: string;
+  name: string | null; // alias if set, else the WhatsApp name
+  raw_name: string | null;
+  alias: string | null;
+  relevance: "monitored" | "ignored";
+  category: string | null;
+  tags: string[] | null;
+  digest_enabled: boolean;
+  digest_cadence: "daily" | "weekly";
+  archived_at: string | null;
+  message_count: number;
+  participants: number;
+  last_activity_at: string | null;
+}
+
+export type GroupInclude = "active" | "archived" | "all";
+
+export function useGroups(include: GroupInclude = "active") {
   return useQuery({
-    queryKey: qk.groups(limit),
-    queryFn: () =>
-      apiFetch<{ groups: Group[] }>(`/groups${qs({ limit })}`),
+    queryKey: qk.groups(include),
+    queryFn: () => apiFetch<{ groups: GroupRow[] }>(`/groups${qs({ include, limit: 500 })}`),
     select: (d) => d.groups,
   });
 }
@@ -1127,18 +1145,37 @@ export function useGroupDigest(chatId: string | undefined) {
   });
 }
 
-// Mark / unmark a group as "suporte/ruído" (hidden by default on Mentions).
-export function useSetGroupSupport() {
+export interface GroupPatch {
+  relevance?: "monitored" | "ignored";
+  category?: string | null;
+  alias?: string | null;
+  tags?: string[];
+  digestEnabled?: boolean;
+  digestCadence?: "daily" | "weekly";
+}
+
+// Update a group's management fields (relevance, category, tags, alias, digest).
+export function usePatchGroup() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ chatId, isSupport }: { chatId: string; isSupport: boolean }) =>
-      apiFetch<{ ok: true }>(`/groups/${chatId}/support`, {
-        method: isSupport ? "POST" : "DELETE",
+    mutationFn: ({ chatId, patch }: { chatId: string; patch: GroupPatch }) =>
+      apiFetch<{ ok: true }>(`/groups/${chatId}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["groups"] });
-      qc.invalidateQueries({ queryKey: ["mentions"] });
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["groups"] }),
+  });
+}
+
+// Archive / unarchive a group (reversible; data untouched).
+export function useArchiveGroup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, archived }: { chatId: string; archived: boolean }) =>
+      apiFetch<{ ok: true }>(`/groups/${chatId}/${archived ? "archive" : "unarchive"}`, {
+        method: "POST",
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["groups"] }),
   });
 }
 

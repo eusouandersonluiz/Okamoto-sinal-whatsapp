@@ -1,9 +1,9 @@
 # Radar Stark
 
-**Inteligência de WhatsApp + CRM.** O Radar Stark transforma um grande arquivo de
-mensagens de WhatsApp (já armazenadas no Supabase) em um cockpit acionável: o que
-precisa de resposta, o que está em alta nos seus grupos, quem está te mencionando
-e um CRM de contatos — tudo em português do Brasil. Um radar que separa o
+**Inteligência de grupos de WhatsApp.** O Radar Stark transforma um grande arquivo
+de mensagens de grupos de WhatsApp (já armazenadas no Supabase) em um cockpit de
+análise e gerenciamento de grupos — o que está em alta, digests por grupo e
+controle do que é monitorado — tudo em português do Brasil. Um radar que separa o
 *sinal* do *ruído*.
 
 > Projeto original de **Bruno Okamoto**.
@@ -21,19 +21,16 @@ e um CRM de contatos — tudo em português do Brasil. Um radar que separa o
 
 ## Funcionalidades
 
-Seis áreas de produto, construídas sobre um princípio — *"nenhum número é beco
-sem saída"*: toda métrica permite abrir as mensagens de origem.
+Produto focado em **grupos**, sobre o princípio *"nenhum número é beco sem
+saída"*: toda métrica permite abrir as mensagens de origem.
 
-- **Visão Geral** — KPIs gerais, mensagens não respondidas e o que está em alta.
-- **Privado** — categorias de DMs, triagem de convites, tópicos privados e tempo
-  gasto.
-- **Grupos** — *pautas* (temas) que cruzam grupos e digests por grupo.
-- **Menções** — quem está falando de você ou dos seus produtos, com trechos reais.
-- **Contatos** — um CRM com perfis editáveis e histórico por contato.
-- **Salvos & Tasks** — itens salvos e tarefas de acompanhamento.
-
-(O app também traz as telas **Mídia** e **Conectores**; a sincronização opcional
-de Contatos do Google fica em Conectores.)
+- **Dashboard de grupos** — KPIs (grupos monitorados, volume), grupos mais ativos
+  e pautas quentes.
+- **Grupos** — lista de todos os grupos (roster completo importado do WhatsApp) com
+  digests por grupo e **gerenciamento**: marcar monitorado/ignorado, categoria,
+  tags, apelido, cadência de digest e arquivar.
+- **Pautas** — temas (*topics*) que cruzam grupos.
+- **Mídia** — mídia proveniente das mensagens de grupos.
 
 ## Stack
 
@@ -48,21 +45,21 @@ de Contatos do Google fica em Conectores.)
 
 ```
 Supabase  ──►  Jobs de IA       ──►  tabelas do app    ──►  Servidor API  ──►  React
-whatsapp_messages   (scripts +       (topics, mentions,    (Express,        frontend
-(read-only)          lib/ai)          crm, enrichment…)     leituras com     (/api)
+whatsapp_messages   (scripts +       (topics, groups,     (Express,        frontend
+(read-only)          lib/ai)          enrichment…)         leituras com     (/api)
                                                             escopo)
 ```
 
 Um monorepo Bun com três grupos de nível superior:
 
 - **`lib/*`** — bibliotecas compartilhadas: `db` (schema Drizzle + pool +
-  migrations), `ai` (classificação, clustering, menções, taxonomia) e os pacotes
+  migrations), `ai` (classificação, clustering de tópicos, taxonomia) e os pacotes
   de cliente/spec/zod da API.
 - **`artifacts/*`** — apps publicáveis: `api-server` (Express) e `radar-web`
   (React/Vite). `mockup-sandbox` guarda referências estáticas de design e
   `radar-deck` é a apresentação do projeto.
 - **`scripts/*`** — jobs de dados e IA (migrations, bootstrap de auth, backfills,
-  construtores de tópicos/menções).
+  construtores de tópicos/pautas de grupo).
 
 Detalhes completos em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 
@@ -138,7 +135,7 @@ linhas com este formato (colunas de texto, salvo indicação):
 | `message_created_at` (timestamptz) | horário da mensagem |
 | `metadata` (jsonb) | extras específicos da origem |
 
-Tudo o que o Radar Stark calcula (tópicos, menções, CRM, enriquecimento) vive em
+Tudo o que o Radar Stark calcula (tópicos/pautas, grupos, enriquecimento) vive em
 tabelas separadas, próprias do app, criadas pelas migrations e ligadas por
 `message_id`. A tabela de origem nunca é modificada.
 

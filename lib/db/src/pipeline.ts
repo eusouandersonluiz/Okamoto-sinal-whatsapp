@@ -55,8 +55,9 @@ interface Job {
   env?: Record<string, string>;
 }
 
-// Same jobs (and cheap-provider defaults) the standalone refresh-all script
-// used, kept here so the API and the scheduler share one definition.
+// Groups-only pipeline: classify new messages (enrichment) then rebuild the
+// cross-group pautas/topics. Contacts (CRM) and mentions jobs were removed with
+// the refocus on groups.
 const JOBS: Job[] = [
   {
     label: "Classificar mensagens novas",
@@ -68,13 +69,7 @@ const JOBS: Job[] = [
       PAGE: process.env.PAGE ?? "900",
     },
   },
-  { label: "Atualizar contatos (CRM + volume)", script: "backfill-contacts" },
   { label: "Reconstruir pautas / tópicos", script: "build-topics" },
-  {
-    label: "Detectar menções",
-    script: "build-mentions",
-    env: { MENTION_SAMPLE: process.env.MENTION_SAMPLE ?? "120" },
-  },
 ];
 
 // A running cycle older than this is assumed dead (process crashed before it

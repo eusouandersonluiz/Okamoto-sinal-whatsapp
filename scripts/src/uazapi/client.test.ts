@@ -2,7 +2,7 @@ import { describe, it, expect, mock, afterEach } from "bun:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { normalizeMessage, normalizeChat, UazapiClient } from "./client";
+import { normalizeMessage, normalizeChat, normalizeGroup, UazapiClient } from "./client";
 
 // Deterministic fetch mocking without vi.stubGlobal: swap globalThis.fetch and
 // always restore it after each test.
@@ -54,6 +54,19 @@ describe("normalizeChat", () => {
     const c = normalizeChat(load("chat.json"));
     expect(c.chatId).toBe("5512900000000@s.whatsapp.net");
     expect(c.name).toBe("Cliente Exemplo");
+  });
+});
+
+describe("normalizeGroup", () => {
+  it("normaliza a fixture de grupo (wa_chatid + wa_name)", () => {
+    const g = normalizeGroup(load("group.json"));
+    expect(g.chatId).toBe("120363000000000000@g.us");
+    expect(g.name).toBe("Grupo Exemplo");
+    expect(g.participantsCount).toBeNull(); // /chat/find não traz contagem
+  });
+  it("captura contagem de participantes quando presente", () => {
+    const g = normalizeGroup({ wa_chatid: "1@g.us", wa_name: "X", wa_groupSize: 42 });
+    expect(g.participantsCount).toBe(42);
   });
 });
 

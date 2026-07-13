@@ -1,4 +1,4 @@
-import type { UazMessage, UazChat } from "./types";
+import type { UazMessage, UazChat, UazGroup } from "./types";
 
 // Endpoints confirmed against the live instance (2026-07-12). All uazapi
 // coupling lives in this file; change only here if the instance version differs.
@@ -71,6 +71,26 @@ export function normalizeChat(raw: Record<string, unknown>): UazChat {
   };
 }
 
+function num(v: unknown): number | null {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// A group from the /chat/find roster (wa_isGroup:true). The roster carries no
+// participant count on this instance, so participantsCount is best-effort (null
+// when absent).
+export function normalizeGroup(raw: Record<string, unknown>): UazGroup {
+  const participants = raw.participants;
+  return {
+    chatId: str(raw.wa_chatid) ?? str(raw.id) ?? "",
+    name: str(raw.wa_name) ?? str(raw.name) ?? null,
+    participantsCount:
+      num(raw.wa_groupSize) ??
+      num(raw.participantsCount) ??
+      (Array.isArray(participants) ? participants.length : null),
+  };
+}
+
 async function postJson(
   base: string,
   token: string,
@@ -128,6 +148,31 @@ export class UazapiClient {
       const total = (payload.pagination as { totalRecords?: number } | undefined)?.totalRecords;
       // With a known total, stop at it; otherwise fall back to "a short page
       // means the end" so a missing totalRecords doesn't silently truncate.
+      if (typeof total === "number") {
+        if (offset >= total) return;
+      } else if (batch.length < this.pageSize) {
+        return;
+      }
+    }
+  }
+
+  // Full group roster: POST /chat/find with wa_isGroup:true, paginated. Yields
+  // every group (incl. quiet ones) so the group-management surface can list them.
+  async *listGroups(): AsyncIterable<UazGroup> {
+    let offset = 0;
+    for (;;) {
+      const payload = await postJson(this.base, this.token, CHAT_ENDPOINT, {
+        operator: "AND",
+        sort: "-wa_lastMsgTimestamp",
+        limit: this.pageSize,
+        offset,
+        wa_isGroup: true,
+      });
+      const batch = (payload.chats ?? []) as Record<string, unknown>[];
+      for (const c of batch) yield normalizeGroup(c);
+      if (batch.length === 0) return;
+      offset += batch.length;
+      const total = (payload.pagination as { totalRecords?: number } | undefined)?.totalRecords;
       if (typeof total === "number") {
         if (offset >= total) return;
       } else if (batch.length < this.pageSize) {

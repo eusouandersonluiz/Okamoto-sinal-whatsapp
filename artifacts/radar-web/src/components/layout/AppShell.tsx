@@ -13,11 +13,8 @@ import {
 import { Search, ChevronDown, Check } from "lucide-react";
 
 const navItems = [
-  { href: "/", label: "Overview", icon: (
+  { href: "/", label: "Dashboard", icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-  ) },
-  { href: "/privado", label: "Privado", icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.5 8.5 0 1 1 21 11.5Z" strokeLinecap="round" strokeLinejoin="round"/></svg>
   ) },
   { href: "/grupos", label: "Grupos", icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3 3 0 0 1 0 5.6M17 19a5.2 5.2 0 0 0-3-4.7" strokeLinecap="round"/></svg>
@@ -25,22 +22,9 @@ const navItems = [
   { href: "/midia", label: "Mídia", icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2.18" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 2v20M17 2v20M2 12h22M2 7h5M2 17h5M17 17h5M17 7h5" strokeLinecap="round" strokeLinejoin="round"/></svg>
   ) },
-  { href: "/mencoes", label: "Menções", icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11a9 9 0 0 1 18 0c0 5-4 6-4 6l-1 3-3-2a9 9 0 0 1-10-7Z" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 11h.01M12 11h.01M16 11h.01" strokeLinecap="round"/></svg>
-  ) },
 ];
 
-const relItems = [
-  { href: "/contatos", label: "Contatos", icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9" strokeLinecap="round"/></svg>
-  ) },
-  { href: "/salvos", label: "Salvos & Tasks", icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-6l-2 3h-4l-2-3H2" strokeLinecap="round" strokeLinejoin="round"/><path d="M5.5 6h13l3.5 6v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6Z" strokeLinecap="round" strokeLinejoin="round"/></svg>
-  ) },
-  { href: "/conectores", label: "Conectores", icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 7 4.5 11.5a4.95 4.95 0 0 0 7 7L16 14M15 17l4.5-4.5a4.95 4.95 0 0 0-7-7L8 10" strokeLinecap="round" strokeLinejoin="round"/></svg>
-  ) }
-];
+const relItems: { href: string; label: string; icon: ReactNode }[] = [];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
