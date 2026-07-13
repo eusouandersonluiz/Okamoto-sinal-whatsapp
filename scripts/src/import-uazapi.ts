@@ -1,6 +1,7 @@
 import { UazapiClient } from "./uazapi/client";
 import type { UazGroup, UazMessage, UazParticipant } from "./uazapi/types";
 import { mapMessage, WHATSAPP_COLUMNS, type WhatsappInsertRow } from "./uazapi/mapper";
+import { RESOLVE_NAMES_SQL } from "./resolve-names";
 
 const BATCH = 500;
 
@@ -244,6 +245,11 @@ async function main(): Promise<void> {
   console.log(
     `import-uazapi done: grupos=${result.groups}/${groupsTotal} inseridas(novas)=${result.inserted} vistas=${result.seen} grupos_sem_msg=${result.emptyGroups}`,
   );
+
+  // Resolve participant names from message pushnames (backfill).
+  const named = await pool.query(RESOLVE_NAMES_SQL, [tenantId]);
+  console.log(`resolve-names: ${named.rowCount ?? 0} nomes resolvidos`);
+
   await pool.end();
 }
 

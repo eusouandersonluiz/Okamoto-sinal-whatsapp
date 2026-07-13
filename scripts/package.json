@@ -15,6 +15,7 @@
     "refresh-all": "bun ./src/refresh-all.ts",
     "import-uazapi": "bun ./src/import-uazapi.ts",
     "verify-import": "bun ./src/verify-import.ts",
+    "resolve-names": "bun ./src/resolve-names.ts",
     "test": "bun test",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
