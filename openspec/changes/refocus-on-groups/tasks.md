@@ -24,20 +24,20 @@
 
 ## 4. Remoção das áreas não-grupo
 
-- [ ] 4.1 API: remover rotas `contacts`, `mentions`, `entities`, `saved`, `tasks`, `google`; limpar `routes/index.ts`
-- [ ] 4.2 Schema: remover `crm`, `mentions`, `saved`, `tasks`, `google` (oauth); limpar `schema/index.ts`
-- [ ] 4.3 Scripts: remover `backfill-contacts`, `build-mentions`; ajustar `refresh-all` e o pipeline (`refresh_runs.jobs`)
-- [ ] 4.4 Front: remover páginas `privado`, `contatos`, `mencoes`, `salvos`, `conectores` + itens de nav
-- [ ] 4.5 Regenerar client/orval (`api-spec`) e garantir que nada referencia endpoints removidos
-- [ ] 4.6 Decisão do usuário: dropar tabelas órfãs (migration separada) ou deixar inertes
-- [ ] 4.7 Typecheck/build verdes após remoção
+- [x] 4.1 API: removidas rotas contacts/mentions/entities/saved/tasks/google (+ lib/google.ts); `routes/index.ts` limpo
+- [x] 4.2 Schema: removidos crm/mentions/saved/tasks/google; `schema/index.ts` limpo
+- [x] 4.3 Scripts: removidos backfill-contacts/build-mentions; pipeline JOBS = classify + pautas; scripts/package.json ajustado
+- [x] 4.4 Front: removidas páginas privado/contatos/mencoes/salvos/conectores + EntityManagerDialog; App.tsx router e AppShell nav só-grupos
+- [x] 4.5 N/A — front usa `@/lib/api.ts` hand-written (sem orval); api.ts atualizado (hooks de grupo). Dead hooks de features removidas ficam p/ cleanup
+- [x] 4.6 DROP escolhido pelo usuário: migration 0011 dropa contacts/mentions/tasks/saved_items/google_oauth_*; verificado no DB local
+- [x] 4.7 Typecheck (libs+api-server+scripts+radar-web) e builds (web+api) verdes; bun test 25/25
 
 ## 5. Front — dashboard + gerenciamento
 
-- [ ] 5.1 Reescrever `overview` como Dashboard de grupos (KPIs, grupos em alta, pautas quentes)
-- [ ] 5.2 Página de Grupos: lista com filtros (categoria/tag/arquivados) + UI de gerenciamento (relevância, apelido, tags, digest, arquivar)
-- [ ] 5.3 Manter Pautas (topics cross-grupo) e Mídia (por grupo) no nav
-- [ ] 5.4 Ajustar router e `AppShell` para o nav só-grupos
+- [x] 5.1 `overview` reescrito = Dashboard de grupos (KPIs: monitorados/mensagens/pautas; grupos mais ativos; pautas quentes via useGroupTopics)
+- [x] 5.2 `grupos` reescrito: lista com filtros (ativos/arquivados/todos) + UI de gestão (relevância, apelido, categoria, tags, digest on/off + cadência, arquivar)
+- [x] 5.3 Mídia mantida no nav; Pautas dobradas no Dashboard (sem nav próprio — decisão de simplicidade)
+- [x] 5.4 Router (App.tsx) e nav (AppShell) só-grupos: Dashboard / Grupos / Mídia
 
 ## 6. Verificação final
 

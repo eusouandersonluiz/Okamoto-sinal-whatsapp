@@ -10,13 +10,8 @@ import { Loader2 } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
 import Login from "@/pages/login";
 import Overview from "@/pages/overview";
-import Privado from "@/pages/privado";
 import Grupos from "@/pages/grupos";
 import Midia from "@/pages/midia";
-import Mencoes from "@/pages/mencoes";
-import Contatos from "@/pages/contatos";
-import Conectores from "@/pages/conectores";
-import Salvos from "@/pages/salvos";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -48,13 +43,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Overview} />
-      <Route path="/privado" component={Privado} />
       <Route path="/grupos" component={Grupos} />
       <Route path="/midia" component={Midia} />
-      <Route path="/mencoes" component={Mencoes} />
-      <Route path="/contatos" component={Contatos} />
-      <Route path="/conectores" component={Conectores} />
-      <Route path="/salvos" component={Salvos} />
       <Route component={NotFound} />
     </Switch>
   );
