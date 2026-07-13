@@ -21,14 +21,14 @@
 
 ## 4. Front — detalhe do grupo
 
-- [ ] 4.1 Hooks no `api.ts`: `useGroupMessages` (paginado/`useInfiniteQuery` ou load-more) + `useGroupParticipants`
-- [ ] 4.2 Rota `/grupos/:chatId` (detalhe): timeline com "carregar mais" + lista de participantes
-- [ ] 4.3 Link do card de grupo → detalhe; contagem real de participantes na lista
-- [ ] 4.4 Router (App.tsx) + navegação
+- [x] 4.1 Hooks no `api.ts`: `useGroupMessages` (paginado/`useInfiniteQuery` ou load-more) + `useGroupParticipants`
+- [x] 4.2 Rota `/grupos/:chatId` (detalhe): timeline com "carregar mais" + lista de participantes
+- [x] 4.3 Link do card de grupo → detalhe; contagem real de participantes na lista
+- [x] 4.4 Router (App.tsx) + navegação
 
 ## 5. Verificação
 
-- [ ] 5.1 typecheck verde em todos os pacotes; `bun test` verde
-- [ ] 5.2 `docker build` ok
-- [ ] 5.3 e2e local: import (participantes) → login → `GET /groups/:id/messages` e `/participants` retornam dados; contagem real
-- [ ] 5.4 Front: abrir um grupo, ver timeline (load-more) + participantes
+- [x] 5.1 typecheck verde em todos os pacotes; `bun test` verde
+- [x] 5.2 `docker build` ok
+- [x] 5.3 e2e local: import (participantes) → login → `GET /groups/:id/messages` e `/participants` retornam dados; contagem real
+- [x] 5.4 Front: abrir um grupo, ver timeline (load-more) + participantes

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import {
   useGroups,
   usePatchGroup,
@@ -24,6 +25,7 @@ function GroupCard({ g }: { g: GroupRow }) {
   const [alias, setAlias] = useState(g.alias ?? "");
   const [category, setCategory] = useState(g.category ?? "");
   const [tagsText, setTagsText] = useState((g.tags ?? []).join(", "));
+  const [, setLocation] = useLocation();
   const patch = usePatchGroup();
   const archive = useArchiveGroup();
 
@@ -64,6 +66,12 @@ function GroupCard({ g }: { g: GroupRow }) {
           )}
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <button
+            onClick={() => setLocation(`/grupos/${g.chat_id}`)}
+            className="text-xs px-2 py-1 rounded bg-[#1A1A20] text-[#35E0D8] hover:bg-[#22222A]"
+          >
+            Abrir
+          </button>
           <button
             onClick={() =>
               patch.mutate({ chatId: g.chat_id, patch: { relevance: ignored ? "monitored" : "ignored" } })
