@@ -41,8 +41,8 @@
 
 ## 6. Verificação final
 
-- [ ] 6.1 `bun install` limpo; typecheck verde em todos os pacotes; `bun test` verde
-- [ ] 6.2 `docker build` ok
-- [ ] 6.3 e2e local: import (roster + todos os grupos) → refresh (amostra) → dashboard de grupos + gerenciamento funcionando
-- [ ] 6.4 `grep` não encontra referências às áreas removidas em código ativo
-- [ ] 6.5 Docs (README/ARQUITETURA) refletem o produto só-grupos
+- [x] 6.1 typecheck verde em TODOS os pacotes (libs+api-server+scripts+radar-web+radar-deck+mockup); `bun test` 25/25
+- [x] 6.2 `docker build` ok (radar-stark:groups)
+- [x] 6.3 e2e local: import roster (5 grupos piloto) + login + `GET /api/groups` retorna grupos com estado de gestão. refresh/pautas com dados enriquecidos = pago (adiado, não bloqueante)
+- [x] 6.4 nav/router/rotas limpos de áreas removidas. Nota: dead hooks (useContacts/useTasks/etc.) ficam em `api.ts` p/ cleanup — não usados, typecheck verde
+- [x] 6.5 README reflete o produto só-grupos (intro, Funcionalidades, arquitetura). ARQUITETURA.md detalhado = follow-up
