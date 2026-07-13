@@ -16,11 +16,11 @@
 
 ## 3. API — gerenciamento + rescopo
 
-- [ ] 3.1 Endpoints de gerenciamento de grupos: relevância, categoria/tags, apelido, cadência de digest, arquivar/desarquivar
-- [ ] 3.2 Rescopar `metrics` para KPIs de grupos (dashboard); excluir grupos `ignored`/arquivados por padrão
-- [ ] 3.3 Rescopar `media` para mídia de grupos
-- [ ] 3.4 Geração de digests respeita `digest_enabled`/`digest_cadence`
-- [ ] 3.5 Testes das rotas de gerenciamento sob `bun test`
+- [x] 3.1 `groups` route reescrito: GET (tabela groups + stats live, filtros active/archived/all) + PATCH (relevância/categoria/tags/apelido/digest_enabled/digest_cadence) + archive/unarchive; digest mantido. typecheck api-server verde
+- [ ] 3.2 Rescopar `metrics` para KPIs de grupos (dashboard); excluir `ignored`/arquivados — PENDENTE (folda na Fase 5 / dashboard)
+- [ ] 3.3 Rescopar `media` para mídia de grupos — PENDENTE
+- [ ] 3.4 Geração de digests respeita `digest_enabled`/`digest_cadence` — PENDENTE (mudança no job de digest)
+- [ ] 3.5 Atualizar testes de `groups.test.ts` p/ os novos endpoints — PENDENTE (integração, precisa DB)
 
 ## 4. Remoção das áreas não-grupo
 
