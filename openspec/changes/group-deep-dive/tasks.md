@@ -1,8 +1,8 @@
 ## 1. DB — participantes
 
-- [ ] 1.1 Migration aditiva: tabela `group_participants` (`tenant_id`, `chat_id`, `lid`, `phone`, `name`, `is_admin`, unique `(tenant_id, chat_id, lid)`) + coluna `groups.participant_count`
-- [ ] 1.2 Schema Drizzle: `groupParticipantsTable` + `participantCount` em `groupsTable`
-- [ ] 1.3 `migrate` aplica limpo (idempotente); colunas/índice confirmados
+- [x] 1.1 Migration aditiva: tabela `group_participants` (`tenant_id`, `chat_id`, `lid`, `phone`, `name`, `is_admin`, unique `(tenant_id, chat_id, lid)`) + coluna `groups.participant_count`
+- [x] 1.2 Schema Drizzle: `groupParticipantsTable` + `participantCount` em `groupsTable`
+- [x] 1.3 `migrate` aplica limpo (idempotente); colunas/índice confirmados
 
 ## 2. Import — /group/info
 

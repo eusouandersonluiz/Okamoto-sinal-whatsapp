@@ -27,8 +27,26 @@ export const groupsTable = pgTable(
     digestEnabled: boolean("digest_enabled").notNull().default(true),
     digestCadence: text("digest_cadence").notNull().default("weekly"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
+    // Real member count from uazapi /group/info (see migration 0012).
+    participantCount: integer("participant_count"),
   },
   (t) => [primaryKey({ columns: [t.tenantId, t.chatId] })],
+);
+
+// Group members fetched from uazapi POST /group/info (group-deep-dive).
+export const groupParticipantsTable = pgTable(
+  "group_participants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id").notNull(),
+    chatId: text("chat_id").notNull(),
+    lid: text("lid").notNull(),
+    phone: text("phone"),
+    name: text("name"),
+    isAdmin: boolean("is_admin").notNull().default(false),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.tenantId, t.chatId, t.lid)],
 );
 
 // User-managed list of groups treated as "support/noise" and hidden by default
@@ -63,3 +81,4 @@ export const groupDigestsTable = pgTable("group_digests", {
 export type Group = typeof groupsTable.$inferSelect;
 export type GroupDigest = typeof groupDigestsTable.$inferSelect;
 export type SupportGroup = typeof supportGroupsTable.$inferSelect;
+export type GroupParticipant = typeof groupParticipantsTable.$inferSelect;
