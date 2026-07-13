@@ -39,6 +39,10 @@ async function main(): Promise<void> {
   );
   const msgs = await n(`select count(*)::text n from whatsapp_messages where chat_type = 'group'`);
   const parts = await n(`select count(*)::text n from group_participants where tenant_id = $1`, [tenantId]);
+  const named = await n(
+    `select count(*)::text n from group_participants where tenant_id = $1 and name is not null`,
+    [tenantId],
+  );
 
   console.log("=== verify-import ===");
   console.log(`grupos no DB:                 ${groups}${available != null ? ` / ${available} disponíveis` : ""}`);
@@ -46,7 +50,7 @@ async function main(): Promise<void> {
   console.log(`grupos SEM mensagens:         ${emptyGroups}`);
   console.log(`grupos SEM participant_count: ${noCount}`);
   console.log(`mensagens de grupo:           ${msgs}`);
-  console.log(`participantes:                ${parts}`);
+  console.log(`participantes:                ${parts} (com nome: ${named}, sem nome: ${parts - named})`);
   if (available != null && groups < available) {
     console.log(`⚠️  INCOMPLETO: faltam ${available - groups} grupos no DB (rode o import sem IMPORT_CHAT_LIMIT)`);
   } else if (available != null) {
