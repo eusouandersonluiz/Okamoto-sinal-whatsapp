@@ -7,12 +7,12 @@
 
 ## 2. Import — roster + todos os grupos
 
-- [ ] 2.1 `client.ts`: `listGroups()` + `normalizeGroup()` (endpoint de grupos do uazapi) + fixture `group.json`
-- [ ] 2.2 Teste de `normalizeGroup` (fixture) sob `bun test`
-- [ ] 2.3 `import-uazapi`: upsert do roster em `groups` (todos os grupos, inclusive silenciosos)
-- [ ] 2.4 `import-uazapi`: iterar só chats `@g.us`, sem `IMPORT_CHAT_LIMIT` por padrão (limites ainda disponíveis)
-- [ ] 2.5 Teste do orquestrador (roster + filtro de grupo) sob `bun test`
-- [ ] 2.6 Piloto contra Supabase local: roster importa; grupos silenciosos aparecem em `groups`
+- [x] 2.1 `client.ts`: `listGroups()` (POST /chat/find wa_isGroup:true) + `normalizeGroup()` + fixture `group.json`; `UazGroup` em types
+- [x] 2.2 Teste de `normalizeGroup` (fixture + contagem opcional) sob `bun test`
+- [x] 2.3 `import-uazapi`: `buildGroupUpsert` + upsert do roster em `groups` (roster antes das mensagens → grupos silenciosos entram)
+- [x] 2.4 `import-uazapi`: itera só grupos (via `listGroups`), sem `IMPORT_CHAT_LIMIT` por padrão; DMs não importadas
+- [x] 2.5 Testes do orquestrador reescritos (roster, grupo silencioso, dedup, falha isolada) — `bun test` 25/25
+- [x] 2.6 Piloto local: 5 grupos → `groups` populada (relevance=monitored, digest_cadence=weekly defaults); dedup por message_id (0 novas)
 
 ## 3. API — gerenciamento + rescopo
 
