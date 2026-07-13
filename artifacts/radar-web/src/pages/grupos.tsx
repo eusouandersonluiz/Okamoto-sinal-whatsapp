@@ -52,7 +52,7 @@ function GroupCard({ g }: { g: GroupRow }) {
             {archived && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#3A2A1A] text-[#C9A16A]">arquivado</span>}
           </div>
           <div className="text-xs text-[#8C8C99] mt-1 font-mono">
-            {g.message_count} msgs · {g.participants} pessoas · última {fmtDate(g.last_activity_at)}
+            {g.message_count} msgs · última atividade {fmtDate(g.last_activity_at)}
           </div>
           {g.category && <div className="text-xs text-[#35E0D8] mt-1">{g.category}</div>}
           {g.tags && g.tags.length > 0 && (

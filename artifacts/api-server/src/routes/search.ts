@@ -6,7 +6,9 @@ import { requireAuth, type AuthedRequest } from "../lib/auth";
 const router: IRouter = Router();
 router.use(requireAuth);
 
-// Global search across CRM people, groups and topics. Powers the Cmd+K palette.
+// Search across groups and topics (pautas). Powers the Cmd+K palette. `people`
+// is always empty since the refocus on groups (the CRM was removed); the field
+// is kept so the client response shape stays stable.
 router.get("/search", async (req: AuthedRequest, res) => {
   const t = req.auth!.tenantId;
   const q = String(req.query.q ?? "").trim();
@@ -16,18 +18,7 @@ router.get("/search", async (req: AuthedRequest, res) => {
   }
   const like = `%${q}%`;
 
-  const [people, groups, topics] = await Promise.all([
-    // CRM contacts (populated from DMs) by name or phone.
-    pool.query(
-      `select id, display_name as name, primary_phone as phone,
-              last_interaction_at as last_at
-         from contacts
-        where tenant_id = $1
-          and (display_name ilike $2 or primary_phone ilike $2)
-        order by last_interaction_at desc nulls last
-        limit 6`,
-      [t, like],
-    ),
+  const [groups, topics] = await Promise.all([
     // Groups derived live from whatsapp_messages.
     pool.query(
       `select chat_id, max(chat_name) as name, count(*)::int as message_count
@@ -51,7 +42,7 @@ router.get("/search", async (req: AuthedRequest, res) => {
   ]);
 
   res.json({
-    people: people.rows,
+    people: [],
     groups: groups.rows,
     topics: topics.rows,
   });
