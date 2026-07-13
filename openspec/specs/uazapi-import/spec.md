@@ -267,3 +267,22 @@ grande interrompido não recomece do zero.
 
 - **WHEN** o import roda sem `IMPORT_RESUME`
 - **THEN** todos os grupos são percorridos e mensagens novas entram por dedup (`on conflict do nothing`)
+
+
+### Requirement: Resolução de nomes de participantes por pushname
+
+O sistema SHALL preencher o nome dos participantes (`group_participants.name`) a
+partir do pushname das mensagens (`sender_name`), quando o nome estiver nulo,
+juntando pelo `@lid` do remetente (`metadata.raw.sender`), usando o pushname mais
+recente por `lid`. MUST NOT sobrescrever nome existente; MUST ser idempotente; NÃO
+altera a tabela read-only `whatsapp_messages`.
+
+#### Scenario: Nome resolvido do pushname
+
+- **WHEN** um participante sem nome tem `lid` que enviou mensagens com `sender_name`
+- **THEN** seu `name` recebe o pushname mais recente daquele `lid`
+
+#### Scenario: Sem pushname permanece nulo
+
+- **WHEN** um participante nunca enviou mensagem (ou grupo sem histórico)
+- **THEN** o nome permanece nulo (o uazapi não expõe o nome dele)
