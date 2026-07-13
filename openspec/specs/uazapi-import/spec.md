@@ -286,3 +286,24 @@ altera a tabela read-only `whatsapp_messages`.
 
 - **WHEN** um participante nunca enviou mensagem (ou grupo sem histórico)
 - **THEN** o nome permanece nulo (o uazapi não expõe o nome dele)
+
+
+### Requirement: Solicitação de histórico sob demanda
+
+O sistema SHALL solicitar histórico antigo ao WhatsApp via
+`POST /message/history-sync`, recuando a partir da mensagem âncora mais antiga
+conhecida do grupo, para tentar recuperar mensagens anteriores à janela do
+pareamento. O acoplamento MUST viver no client (`requestHistorySync`). A entrega é
+assíncrona e limitada pelo que os servidores do WhatsApp retêm para o device; o
+sistema MUST tolerar isso (esperar, reconsultar) e parar por grupo quando o
+histórico não recua mais.
+
+#### Scenario: Dispara history-sync recuando
+
+- **WHEN** um grupo com mensagens roda `sync-history`
+- **THEN** o sistema chama `/message/history-sync` com a âncora mais antiga e um `count`
+
+#### Scenario: Para quando o WhatsApp não devolve mais
+
+- **WHEN** após um disparo o histórico não recua dentro da janela de espera
+- **THEN** o sistema para para aquele grupo, sem abortar os demais (limite server-side do WhatsApp)
