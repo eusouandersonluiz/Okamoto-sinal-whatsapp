@@ -81,6 +81,11 @@ export interface ImportDeps {
   // Optional: fetch + persist participants/count for one group. A failure here
   // is logged and skipped (resilience per group), never aborting the import.
   syncParticipants?: (chatId: string) => Promise<void>;
+  // Optional total number of groups (for `i/total` progress logging).
+  groupsTotal?: number;
+  // Optional resume check: when it returns true for a group, that group is
+  // skipped entirely (already fully imported) — used by IMPORT_RESUME.
+  isGroupDone?: (chatId: string) => Promise<boolean>;
   log?: (msg: string) => void;
   msgLimit?: number;
 }
@@ -90,11 +95,14 @@ export interface ImportDeps {
 // skipped without aborting the rest.
 export async function runImport(
   deps: ImportDeps,
-): Promise<{ groups: number; seen: number; inserted: number }> {
+): Promise<{ groups: number; seen: number; inserted: number; emptyGroups: number }> {
   const log = deps.log ?? (() => {});
+  const total = deps.groupsTotal;
   let groups = 0;
   let seen = 0;
   let inserted = 0;
+  let emptyGroups = 0;
+  let skipped = 0;
   let msgBuffer: WhatsappInsertRow[] = [];
   let rosterBuffer: UazGroup[] = [];
 
@@ -111,6 +119,15 @@ export async function runImport(
 
   for await (const group of deps.listGroups()) {
     groups++;
+    const at = total ? `${groups}/${total}` : `${groups}`;
+
+    // Resume: skip groups already fully imported.
+    if (deps.isGroupDone && (await deps.isGroupDone(group.chatId))) {
+      skipped++;
+      log(`grupo ${at} ${group.chatId}: já importado — pulando (resume)`);
+      continue;
+    }
+
     rosterBuffer.push(group);
     if (rosterBuffer.length >= BATCH) await flushRoster();
 
@@ -123,7 +140,7 @@ export async function runImport(
       }
     }
 
-    let perGroup = 0;
+    let groupSeen = 0;
     // Catch ONLY message-fetch errors per group. Insert errors from flush() are
     // fatal and must NOT be swallowed.
     const it = deps.listMessages(group.chatId)[Symbol.asyncIterator]();
@@ -138,17 +155,20 @@ export async function runImport(
       if (res.done) break;
       const m = res.value;
       seen++;
+      groupSeen++;
       const row = mapMessage(m.chatName ? m : { ...m, chatName: group.name }, deps.owner);
       if (!row) continue;
       msgBuffer.push(row);
       if (msgBuffer.length >= BATCH) await flushMsgs();
-      if (deps.msgLimit && ++perGroup >= deps.msgLimit) break;
+      if (deps.msgLimit && groupSeen >= deps.msgLimit) break;
     }
-    log(`grupo ${group.chatId}: ${perGroup} vistas nesta rodada (total ${seen})`);
+    if (groupSeen === 0) emptyGroups++;
+    log(`grupo ${at} ${group.chatId}: ${groupSeen} vistas nesta rodada (total ${seen})`);
   }
   await flushRoster();
   await flushMsgs();
-  return { groups, seen, inserted };
+  if (skipped > 0) log(`${skipped} grupos pulados (resume)`);
+  return { groups, seen, inserted, emptyGroups };
 }
 
 async function main(): Promise<void> {
@@ -168,11 +188,15 @@ async function main(): Promise<void> {
   const since = process.env.IMPORT_SINCE ? Date.parse(process.env.IMPORT_SINCE) : undefined;
 
   const skipParticipants = process.env.IMPORT_SKIP_PARTICIPANTS === "1";
+  const resume = process.env.IMPORT_RESUME === "1";
+  const groupsTotal = await client.countGroups();
+  console.log(`import-uazapi: ${groupsTotal} grupos disponíveis no uazapi`);
   let groupsDone = 0;
   const result = await runImport({
     owner,
     tenantId,
     msgLimit,
+    groupsTotal: Number.isFinite(chatLimit) ? Math.min(groupsTotal, chatLimit) : groupsTotal,
     log: (m) => console.log(m),
     insertRows: async (rows) => {
       const stmt = buildInsert(rows);
@@ -198,6 +222,21 @@ async function main(): Promise<void> {
             );
           }
         },
+    isGroupDone: resume
+      ? async (chatId) => {
+          const chatKey = chatId.split("@")[0] ?? chatId;
+          const r = await pool.query(
+            `select 1 from groups g
+              where g.tenant_id = $1 and g.chat_id = $2 and g.participant_count is not null
+                and exists (
+                  select 1 from whatsapp_messages w
+                   where w.chat_id = $2 and w.chat_type = 'group' limit 1
+                ) limit 1`,
+            [tenantId, chatKey],
+          );
+          return (r.rowCount ?? 0) > 0;
+        }
+      : undefined,
     listGroups: async function* () {
       for await (const g of client.listGroups()) {
         if (groupsDone++ >= chatLimit) return;
@@ -208,7 +247,7 @@ async function main(): Promise<void> {
   });
 
   console.log(
-    `import-uazapi done: groups=${result.groups} seen=${result.seen} inserted(novas)=${result.inserted}`,
+    `import-uazapi done: grupos=${result.groups}/${groupsTotal} inseridas(novas)=${result.inserted} vistas=${result.seen} grupos_sem_msg=${result.emptyGroups}`,
   );
   await pool.end();
 }
