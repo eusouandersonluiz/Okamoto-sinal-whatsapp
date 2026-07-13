@@ -24,5 +24,5 @@
 
 ## 5. Verificação de código
 
-- [ ] 5.1 typecheck verde em todos os pacotes; `bun test` verde
-- [ ] 5.2 `docker build` ok
+- [x] 5.1 typecheck verde em todos os pacotes; `bun test` verde
+- [x] 5.2 `docker build` — N/A (mudança só em scripts; imagem = api+web, inalterada). typecheck verde é o gate
