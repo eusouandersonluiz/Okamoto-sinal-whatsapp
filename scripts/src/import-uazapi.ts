@@ -104,17 +104,11 @@ export async function runImport(
   let emptyGroups = 0;
   let skipped = 0;
   let msgBuffer: WhatsappInsertRow[] = [];
-  let rosterBuffer: UazGroup[] = [];
 
   const flushMsgs = async () => {
     if (msgBuffer.length === 0) return;
     inserted += await deps.insertRows(msgBuffer); // insert errors propagate (fatal)
     msgBuffer = [];
-  };
-  const flushRoster = async () => {
-    if (rosterBuffer.length === 0) return;
-    await deps.upsertGroups(rosterBuffer);
-    rosterBuffer = [];
   };
 
   for await (const group of deps.listGroups()) {
@@ -128,8 +122,10 @@ export async function runImport(
       continue;
     }
 
-    rosterBuffer.push(group);
-    if (rosterBuffer.length >= BATCH) await flushRoster();
+    // Upsert the roster row immediately (before participants) so the group exists
+    // when syncParticipants updates its participant_count, and so a crash mid-run
+    // still persists the groups seen so far.
+    await deps.upsertGroups([group]);
 
     // Participants (own try: a failing /group/info must not abort the import).
     if (deps.syncParticipants) {
@@ -165,7 +161,6 @@ export async function runImport(
     if (groupSeen === 0) emptyGroups++;
     log(`grupo ${at} ${group.chatId}: ${groupSeen} vistas nesta rodada (total ${seen})`);
   }
-  await flushRoster();
   await flushMsgs();
   if (skipped > 0) log(`${skipped} grupos pulados (resume)`);
   return { groups, seen, inserted, emptyGroups };
