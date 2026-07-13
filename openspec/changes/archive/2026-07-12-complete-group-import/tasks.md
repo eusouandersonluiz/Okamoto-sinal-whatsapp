@@ -18,9 +18,9 @@
 
 ## 4. Executar o import completo
 
-- [ ] 4.1 Piloto com progresso (ex.: `IMPORT_CHAT_LIMIT=10`) — confirmar `i/total` e resumo
-- [ ] 4.2 Full: `import-uazapi` sem limites (todos os grupos + mensagens + participantes) contra Supabase local
-- [ ] 4.3 `verify-import`: grupos no DB ≈ 349; poucos/zero grupos vazios; participantes populados
+- [x] 4.1 Piloto com progresso (ex.: `IMPORT_CHAT_LIMIT=10`) — confirmar `i/total` e resumo
+- [x] 4.2 Full: `import-uazapi` sem limites (todos os grupos + mensagens + participantes) contra Supabase local
+- [x] 4.3 `verify-import`: grupos no DB ≈ 349; poucos/zero grupos vazios; participantes populados
 
 ## 5. Verificação de código
 
